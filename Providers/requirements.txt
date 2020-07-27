@@ -1,1 +1,18 @@
-Flask==0.10.1
+
+For flask:
+    sudo apt-get install -y python-dev default-libmysqlclient-dev libssl-dev
+    pip install flask-mysql / 
+
+    env:
+        set  and export FLASK_APP=app.py
+
+
+for db:
+    image: mysql:5.7
+    volumes: 
+        connect initsql from providers dir
+    environment: 
+       - "MYSQL_ROOT_PASSWORD=qwerty"
+    export 3306:3306
+
+
