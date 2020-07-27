@@ -3,16 +3,21 @@ from flask import Flask, jsonify
 from flask import render_template
 from flask import request
 from flask_mysqldb import MySQL
-
+# from config import Config
+# from flask_migrate import Migrate
+# from flask_sqlalchemy import SQLAlchemy
 # connections
-app = Flask(__name__)
+app = Flask(_name_)
 
 app.config['MYSQL_HOST'] = '127.0.0.1'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'qwerty'
-app.config['MYSQL_DB'] = 'providers'
+app.config['MYSQL_DB'] = 'information_schema'
 
 mysql = MySQL(app)
+
+#db = MySQL.connect("localhost", "root", "qwerty", "information_schema")
+
 
 # =================================================================
 
@@ -24,14 +29,15 @@ def index():
     return "Hello, World!"
 
 
-@app.route('/health')
+@app.route('/health', methods=['GET'])
 def check_health():
+    query = "SELECT * FROM PLUGINS;"
     cur = mysql.connection.cursor()
-    cur.execute(
-        "SELECT 1;")
+    cur.execute(query)
     mysql.connection.commit()
+    res = cur.fetchall()
     cur.close()
-    return jsonify(data=cur.fetchall())
+    return jsonify(res)
 
 
 @app.route('/provider/reg', methods=['POST'])
@@ -43,6 +49,12 @@ def get_tasks():
 @app.route('/provider/add', methods=['GET'])
 def load_form():
     return render_template('index.html')
+
+
+# @app.route('/api/healthy', methods=['GET'])
+# def get_tasks():
+#     return jsonify({'tasks': tasks})
+
 
 @app.route('/provider/{id}', methods=['PUT'])
 def update_provider():
