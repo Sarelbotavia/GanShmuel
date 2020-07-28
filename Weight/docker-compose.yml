@@ -16,3 +16,4 @@ services:
 
 volumes:
   my_db:
+    external: true

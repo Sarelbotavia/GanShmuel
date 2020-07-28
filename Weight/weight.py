@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config['MYSQL_HOST'] = '127.0.0.1'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = '123'
-app.config['MYSQL_DB'] = 'fuck'
+app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
 
@@ -20,7 +20,7 @@ def index():
         lastName = details['lname']
         cur = mysql.connection.cursor()
         cur.execute(
-            "INSERT INTO fuck2(firstName, lastName) VALUES (%s, %s)", (firstName, lastName))
+            "INSERT INTO products(product_name, scope) VALUES (%s, %s)", (firstName, lastName))
         mysql.connection.commit()
         cur.close()
         return 'success'
@@ -59,18 +59,13 @@ def get_session():
 
 @app.route('/health', methods=['GET'])
 def get_health():
-    query = "SELECT * FROM fuck2;"
-
     try:
         cur = mysql.connection.cursor()
     except:
         return "MYSQL_IS_DOWN"
     else:
-        # cur.execute(query)
-        # mysql.connection.commit()
-        #res = cur.fetchall()
+
         cur.close()
-        # return jsonify(res)
         return "RUNNING"
 
 # @app.route('/api/healthy', methods=['GET'])

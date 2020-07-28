@@ -1,5 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `db` /* Blue's db! */;
-USE `db`;
+CREATE DATABASE  IF NOT EXISTS `weight_db` /* Blue's db! */;
+USE `weight_db`;
 -- MySQL dump 10.13  Distrib 5.7.25, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: db
@@ -28,13 +28,13 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `providers`;
-CREATE TABLE `providers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `providername` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- DROP TABLE IF EXISTS `providers`;
+-- CREATE TABLE `providers` (
+--   `id` int(11) NOT NULL AUTO_INCREMENT,
+--   `providername` varchar(45) DEFAULT NULL,
+--   PRIMARY KEY (`id`),
+--   UNIQUE KEY `id_UNIQUE` (`id`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `trucks`;
@@ -77,10 +77,10 @@ CREATE TABLE `containers_has_sessions` (
 
 INSERT INTO `trucks` (`id`, `truckid`) VALUES (1, 'none');
 
-INSERT INTO providers (providername) VALUES ('Tapuzina');
-INSERT INTO providers (providername) VALUES ('Herut');
-INSERT INTO providers (providername) VALUES ('Mishmeret');
-INSERT INTO providers (providername) VALUES ('KfarHess');
+-- INSERT INTO providers (providername) VALUES ('Tapuzina');
+-- INSERT INTO providers (providername) VALUES ('Herut');
+-- INSERT INTO providers (providername) VALUES ('Mishmeret');
+-- INSERT INTO providers (providername) VALUES ('KfarHess');
 
 INSERT INTO containers (id,weight,unit) VALUES ('K-8263',666,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7854',854,'lbs');
