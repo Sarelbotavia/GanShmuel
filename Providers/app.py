@@ -93,12 +93,8 @@ def get_health():
 # def get_tasks():
 #     return jsonify({'tasks': tasks})
 
-<<<<<<< HEAD
 
-
-app.run(debug=True, host='0.0.0.0', port="5000")
-=======
 app.run(host='0.0.0.0', port="5000")
 if __name__ == '__main__':
     app.run(debug=True)
->>>>>>> e9372c276b870ece6f1c4046cf7c7864e2a1b90e
+
