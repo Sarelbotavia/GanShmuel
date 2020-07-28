@@ -1,10 +1,11 @@
 
 For flask:
-    sudo apt-get install -y python-dev default-libmysqlclient-dev libssl-dev
-    pip install flask-mysql / 
-
+    use python 3.6.9 with pip3
+    sudo apt-get install -y python3.6-dev libmysqlclient-dev libssl-dev
+    pip install flask-mysqldb / 
+    pip install --upgrade setuptools
     env:
-        set  and export FLASK_APP=app.py
+        set & export FLASK_APP=app.py
 
 
 for db:
