@@ -29,9 +29,29 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/weight', methods=['POST'])
+@app.route('/weight', methods=['GET','POST'])
 def post_weight():
-    return "weight"
+    if request.method == "POST":
+        details = request.form
+        direction = details['dir']
+        containers = details['containers']
+        truck = details['truck']
+        weight = details['weight']
+        unit = details['unit']
+        force = request.form.get('force')
+        produce = details['produce']
+
+        if truck == "":
+            truck="NA"
+        if produce == "":
+            produce="NA"    
+        
+        # whats left is to play with the SQL table and return json file
+        # or just a string that looks like a jason file ;)
+        # and answer currently (failed because of ... or succeed and retun json)
+
+
+    return render_template('weight.html')
 
 
 @app.route('/batch-weight', methods=['GET', 'POST'])
