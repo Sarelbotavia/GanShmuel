@@ -6,8 +6,9 @@ pipeline{
             steps{
                 echo "========executing A========"
                 sh 'ls -ll'
-                sh 'docker-compose up -d'
-                sh 'docker ps' 
+                sh 'docker-compose --version'
+                //sh 'docker-compose up -d'
+                //sh 'docker ps' 
             }
             post{
                 always{
