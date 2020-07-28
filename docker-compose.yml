@@ -3,9 +3,9 @@ version: "3"
 services:
   db:
     container_name: db
-    volumes:
-     - db:/var/lib/mysql
     image: devops2030/gan_shmuel:latest
+    volumes: 
+      - db:/var/lib/mysql
     ports: 
      - "3306:3306"
   
@@ -17,6 +17,8 @@ services:
     volumes:
       - "./Providers/app.py:/app.py"
     image: pro
+    ports: 
+      - 5000:5000
     entrypoint: sleep 99999999
     ports:
       - "5000:5000"
