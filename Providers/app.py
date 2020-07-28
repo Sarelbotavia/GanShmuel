@@ -9,8 +9,8 @@ from flask_mysqldb import MySQL
 # from flask_sqlalchemy import SQLAlchemy
 # connections
 project_root = os.path.dirname(__file__)
-# template_path = os.path.join(project_root, './templates') if there is a templates folder
-app = Flask(__name__, template_folder=project_root)
+template_path = os.path.join(project_root, './templates')
+app = Flask(__name__, template_folder=template_path)
 
 app.config['MYSQL_HOST'] = 'db'
 app.config['MYSQL_USER'] = 'provider'
@@ -32,13 +32,21 @@ def index():
     return "Hello, World!"
 
 
-@app.route('/reg', methods=['POST'])
+@app.route('/provider/reg', methods=['POST'])
 def get_tasks():
-    name = request.form.get("p_name")
-    return name
+    providerName = request.form.get("p_name")
+    query = "INSERT INTO Provider (name) VALUES ('{}')".format(providerName)
+    cur = mysql.connection.cursor()
+    cur.execute(query)
+    mysql.connection.commit()
+    res = cur.fetchall()
+    cur.close()
+    return jsonify(res)
+    # INSERT INTO table_name
+    #VALUES (value1, value2, value3, ...);
 
 
-@app.route('/addprovider', methods=['GET'])
+@app.route('/provider/add', methods=['GET'])
 def load_form():
     return render_template('index.html')
 
