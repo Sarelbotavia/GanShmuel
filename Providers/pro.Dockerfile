@@ -9,5 +9,4 @@ RUN pip install --upgrade pip setuptools
 RUN pip install flask-mysql flask flask-mysqldb
 RUN export FLASK_APP=app.py
 RUN export FLASK_ENV=development
-RUN pip install 
 COPY * /
