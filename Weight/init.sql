@@ -1,4 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `weight_db` /* Blue's db! */;
+CREATE DATABASE  IF NOT EXISTS `weight_db`; /* Blue's db! */
 USE `weight_db`;
 -- MySQL dump 10.13  Distrib 5.7.25, for Linux (x86_64)
 --
@@ -53,7 +53,6 @@ DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `direction` enum('in','out','none') DEFAULT NULL,
-  `f` bool DEFAULT NULL,
   `date` varchar(45) DEFAULT NULL,
   `bruto` float DEFAULT NULL,
   `neto` float DEFAULT NULL,
@@ -87,6 +86,7 @@ INSERT INTO containers (id,weight,unit) VALUES ('K-7854',854,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-6523',741,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-2369',120,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7845',999,'lbs');
+INSERT INTO containers (id,weight,unit) VALUES ('K-1234',111,'ks');
 
 INSERT INTO products (product_name,rate,scope) VALUES ('Blood',122,'ALL');
 INSERT INTO products (product_name,rate,scope) VALUES ('Mandarin',103,'ALL');
@@ -102,8 +102,15 @@ INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('99888',1,999,'lbs')
 INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('66321',3,741,'kg');
 INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('12365',4,854,'lbs');
 
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-8263',1);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7854',2);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',3);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-2369',1);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845',2);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',3);
 
-INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('in', 1, '20181218181512', 999, 800, 77777, 2);
-INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('in', 1, '20161218181512', 120, 100, 99888, 1);
-INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('out', 1, '20170920102017', 741, 650, 12365, 3);
+
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1);
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('out', '20170920102017', 741, 650, 12365, 3);
 
