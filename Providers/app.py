@@ -7,7 +7,7 @@ from flask_mysqldb import MySQL
 # from flask_migrate import Migrate
 # from flask_sqlalchemy import SQLAlchemy
 # connections
-app = Flask(_name_)
+app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = '127.0.0.1'
 app.config['MYSQL_USER'] = 'root'
