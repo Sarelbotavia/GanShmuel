@@ -1,31 +1,35 @@
 pipeline{
     agent any
 
-    stages{
-        stage("A"){
-            steps{
-                echo "========executing A========"
-                sh 'ls -ll'
-                sh 'docker-compose --version'
-                dir('Devops') {
-                    sh 'docker build -f Providers/flask.Dockerfile -t pro Providers'
-                    sh 'docker-compose up pro'
-                }
-            }
-            post{
-                always{
-                    echo "========always========"
-                }
-                success{
-                    echo "========A executed successfully========"
-                }
-                failure{
-                    echo "========A execution failed========"
+    stages {
+        stage("Build") {
+            steps {
+                echo "======== executing Build Stage ========"
+                script {
+                    flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
                 }
             }
         }
+        stage("Test") {
+            steps {
+                echo "======== executing Test Stage ========"
+                script {
+                    flask.withRun('--net nt --name pro') {
+                        sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
+                            --retry-connrefused --silent --fail pro:5000'
+                    }
+                }
+            }
+        }
+        stage("Deploy") {
+            echo "======== executing Deploy Stage ========"
+            steps {
+                sh 'docker compose -f Devops/docker-compose.yml up -d pro'
+                sh 'timeout --preserve-status --foreground 30 docker-compose logs -f pro'
+            }
+        }
     }
-    post{
+    post {
         always{
             echo "========always========"
         }
