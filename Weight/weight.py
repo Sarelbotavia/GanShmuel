@@ -88,10 +88,28 @@ def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-@ app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
-def get_item_id():
-    return "item/<id>?from=t1&to=t2"
-
+@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
+def get_item_id(id):
+    test_id=id
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        query = ("SELECT trucks_id, id, date, bruto FROM sessions WHERE trucks_id='{}';".format(test_id))
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        if not res:
+            query = ("SELECT id FROM containers WHERE id='{}';".format(test_id))
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            if not res:
+                return "not a valid id"
+        cur.close()
+        return jsonify(res)
+ 
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session():
