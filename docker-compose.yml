@@ -20,8 +20,6 @@ services:
     ports: 
       - 5000:5000
     entrypoint: sleep 99999999
-    ports:
-      - "5000:5000"
 
 
 volumes:

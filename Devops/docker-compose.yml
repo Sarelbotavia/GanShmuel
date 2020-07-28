@@ -1,0 +1,32 @@
+version: "3"
+
+#devops2030/gan_shmuel:latest
+services:
+  db:
+    container_name: db
+    #volumes:
+    # - /home/Admin/docker/14_gan_shmuel/devops/Devops/init:/docker-entrypoint-initdb.d
+    # - db:/var/lib/mysql
+    image: devops2030/gan_shmuel
+    environment: 
+     - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+    ports: 
+     - "3306:3306"
+  
+  pro:
+    build:
+      dockerfile: flask.Dockerfile
+      context: ../Providers
+    container_name: pro
+    image: pro
+    ports: 
+     - "8090:5000"
+
+volumes:
+  db:
+    external: true
+
+networks:
+  default:
+    external:
+      name: nt
