@@ -8,8 +8,8 @@ pipeline{
                 sh 'ls -ll'
                 sh 'docker-compose --version'
                 dir('Devops') {
+                    sh 'docker build -f Providers/flask.Dockerfile -t pro Providers'
                     sh 'docker-compose up pro'
-                    //sh 'docker build -f flask.Dockerfile -t pro Providers'
                 }
             }
             post{
