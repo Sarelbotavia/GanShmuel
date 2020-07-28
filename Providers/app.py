@@ -49,34 +49,43 @@ def load_form():
 def update_provider():
     return "return render_template('index.html')"
 
+
 @app.route('/rates', methods=['POST'])
 def upload_rates():
     return "return render_template('index.html')"
+
 
 @app.route('/rates', methods=['GET'])
 def get_rates():
     return "return render_template('index.html')"
 
+
 @app.route('/truck', methods=['POST'])
 def add_truck():
     return "return render_template('index.html')"
+
 
 @app.route('/truck/{id}', methods=['PUT'])
 def update_truck():
     return "return render_template('index.html')"
 
+
 @app.route('/truck/<id>?from=t1&to=t2', methods=['GET'])
 def get_truck():
     return "return render_template('index.html')"
 
+
 @app.route('/bill/<id>?from=t1&to=t2', methods=['GET'])
 def get_bill():
     return "return render_template('index.html')"
+
+
 """
 @app.route('/health', methods=['GET'])
 def get_health():
     return "return render_template('index.html')"
 """
+
 
 @app.route('/health', methods=['GET'])
 def get_health():
@@ -87,11 +96,12 @@ def get_health():
         return "MYSQL_IS_DOWN"
     else:
         cur.close()
-    return "RUNNING" 
+    return "RUNNING"
 
 # @app.route('/api/healthy', methods=['GET'])
 # def get_tasks():
 #     return jsonify({'tasks': tasks})
+
 
 app.run(host='0.0.0.0', port="5000")
 if __name__ == '__main__':
