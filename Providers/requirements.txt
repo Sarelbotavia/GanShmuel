@@ -1,21 +1,11 @@
+python==3.6.9
+sudo apt-get install -y python3.6-dev libmysqlclient-dev libssl-dev
+pip install flask-mysqldb / 
+pip install --upgrade setuptools
+set FLASK_APP=app.py
+export FLASK_APP=app.py
+mysql==5.7
 
-For flask:
-    use python 3.6.9 with pip3
-    sudo apt-get install -y python3.6-dev libmysqlclient-dev libssl-dev
-    pip install flask-mysqldb / 
-    pip install --upgrade setuptools
-    env:
-        set & export FLASK_APP=app.py
 
-
-for db:
-    image: mysql:5.7
-    volumes: 
-        connect initsql from providers dir
-    environment: 
-       - "MYSQL_ROOT_PASSWORD=qwerty"
-    export 3306:3306
-
-#
 
 
