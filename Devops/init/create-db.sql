@@ -1,8 +1,8 @@
 --
--- Database: `Weight`
+-- Database: `weight`
 --
 
-CREATE DATABASE IF NOT EXISTS `weight`;
+CREATE DATABASE IF NOT EXISTS `weight_db`;
 
 -- --------------------------------------------------------
 
@@ -10,7 +10,7 @@ CREATE DATABASE IF NOT EXISTS `weight`;
 -- Table structure for table `containers-registered`
 --
 
-USE weight;
+USE weight_db;
 
 
 CREATE TABLE IF NOT EXISTS `containers_registered` (

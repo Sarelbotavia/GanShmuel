@@ -7,12 +7,12 @@ from flask_mysqldb import MySQL
 # from flask_migrate import Migrate
 # from flask_sqlalchemy import SQLAlchemy
 # connections
-app = Flask(_name_)
+app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = '127.0.0.1'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'qwerty'
-app.config['MYSQL_DB'] = 'information_schema'
+app.config['MYSQL_HOST'] = 'db'
+app.config['MYSQL_USER'] = 'provider'
+app.config['MYSQL_PASSWORD'] = '123'
+app.config['MYSQL_DB'] = 'billdb'
 
 mysql = MySQL(app)
 
@@ -27,17 +27,6 @@ mysql = MySQL(app)
 @app.route('/')
 def index():
     return "Hello, World!"
-
-
-@app.route('/health', methods=['GET'])
-def check_health():
-    query = "SELECT * FROM PLUGINS;"
-    cur = mysql.connection.cursor()
-    cur.execute(query)
-    mysql.connection.commit()
-    res = cur.fetchall()
-    cur.close()
-    return jsonify(res)
 
 
 @app.route('/provider/reg', methods=['POST'])
@@ -83,10 +72,22 @@ def get_truck():
 @app.route('/bill/<id>?from=t1&to=t2', methods=['GET'])
 def get_bill():
     return "return render_template('index.html')"
-
+"""
 @app.route('/health', methods=['GET'])
 def get_health():
     return "return render_template('index.html')"
+"""
+
+@app.route('/health', methods=['GET'])
+def get_health():
+    query = "SELECT * FROM billdb;"
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        cur.close()
+    return "RUNNING" 
 
 # @app.route('/api/healthy', methods=['GET'])
 # def get_tasks():
