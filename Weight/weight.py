@@ -120,7 +120,6 @@ def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-<<<<<<< HEAD
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
 def get_item_id(id):
@@ -128,31 +127,21 @@ def get_item_id(id):
     to=request.args.get('to')
     from1=request.args.get('from')
     # --20181218181512--20181221141414
-=======
-@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
-def get_item_id(id):
-    test_id=id
->>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
+
     try:
         cur = mysql.connection.cursor()
     except:
         return "MYSQL_IS_DOWN"
     else:
-<<<<<<< HEAD
+
         
         query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
-=======
-        query = ("SELECT trucks_id, id, date, bruto FROM sessions WHERE trucks_id='{}';".format(test_id))
->>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
-<<<<<<< HEAD
+
             query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
-=======
-            query = ("SELECT id FROM containers WHERE id='{}';".format(test_id))
->>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -160,12 +149,6 @@ def get_item_id(id):
                 return "not a valid id"
         cur.close()
         return jsonify(res)
-<<<<<<< HEAD
-
-
-=======
- 
->>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session():
