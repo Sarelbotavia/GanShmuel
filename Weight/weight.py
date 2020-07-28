@@ -1,9 +1,14 @@
 #!flask/bin/python
+"""
 from datetime import datetime
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
+"""
+from flask import Flask, jsonify, render_template, request
+from flask_mysqldb import MySQL
+
 
 app = Flask(__name__)
 
@@ -28,7 +33,6 @@ def index():
         cur.close()
         return 'success'
     return render_template('index.html')
-
 
 @app.route('/weight', methods=['GET','POST'])
 def post_weight():
@@ -119,7 +123,6 @@ def get_unknown():
 def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
-
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
 def get_item_id(id):
@@ -162,7 +165,6 @@ def get_health():
     except:
         return "MYSQL_IS_DOWN"
     else:
-
         cur.close()
         return "RUNNING"
 
