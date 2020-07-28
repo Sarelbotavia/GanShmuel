@@ -3,8 +3,9 @@ version: "3"
 services:
   db:
     container_name: db
-     - db:/var/lib/mysql
     image: devops2030/gan_shmuel:latest
+    volumes: 
+      - db:/var/lib/mysql
     ports: 
      - "3306:3306"
   
@@ -14,6 +15,8 @@ services:
       context: $PWD/Providers
     container_name: pro
     image: pro
+    ports: 
+      - 5000:5000
     entrypoint: sleep 99999999
 
 
