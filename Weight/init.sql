@@ -111,8 +111,11 @@ INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234
 
 
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
+<<<<<<< HEAD
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181221141414', 800, 500, 77777, 1);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181220151515', 700, 600, 77777, 3);
+=======
+>>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('out', '20170920102017', 741, 650, 12365, 3);
 
