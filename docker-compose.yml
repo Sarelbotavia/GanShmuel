@@ -3,18 +3,25 @@ version: "3"
 services:
   db:
     container_name: db
-     - db:/var/lib/mysql
     image: devops2030/gan_shmuel:latest
+    volumes: 
+      - db:/var/lib/mysql
     ports: 
      - "3306:3306"
   
   pro:
     build:
       dockerfile: pro.Dockerfile
-      context: $PWD/Providers
+      context: Providers
     container_name: pro
+    volumes:
+      - "./Providers/app.py:/app.py"
     image: pro
+    ports: 
+      - 5000:5000
     entrypoint: sleep 99999999
+    ports:
+      - "5000:5000"
 
 
 volumes:
