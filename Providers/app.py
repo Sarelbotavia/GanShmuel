@@ -1,4 +1,5 @@
 #!flask/bin/python
+import os
 from flask import Flask, jsonify
 from flask import render_template
 from flask import request
@@ -7,7 +8,9 @@ from flask_mysqldb import MySQL
 # from flask_migrate import Migrate
 # from flask_sqlalchemy import SQLAlchemy
 # connections
-app = Flask(__name__)
+project_root = os.path.dirname(__file__)
+template_path = os.path.join(project_root, './templates')
+app = Flask(__name__, template_folder=template_path)
 
 app.config['MYSQL_HOST'] = 'db'
 app.config['MYSQL_USER'] = 'provider'
@@ -31,8 +34,16 @@ def index():
 
 @app.route('/provider/reg', methods=['POST'])
 def get_tasks():
-    name = request.form.get("p_name")
-    return name
+    providerName = request.form.get("p_name")
+    query = "INSERT INTO Provider (name) VALUES ('{}')".format(providerName)
+    cur = mysql.connection.cursor()
+    cur.execute(query)
+    mysql.connection.commit()
+    res = cur.fetchall()
+    cur.close()
+    return jsonify(res)
+    # INSERT INTO table_name
+    #VALUES (value1, value2, value3, ...);
 
 
 @app.route('/provider/add', methods=['GET'])
