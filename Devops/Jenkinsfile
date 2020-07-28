@@ -24,7 +24,7 @@ pipeline{
         stage("Deploy") {
             steps {
                 echo "======== executing Deploy Stage ========"
-                sh 'docker compose -f Devops/docker-compose.yml up -d pro'
+                sh 'docker-compose -f Devops/docker-compose.yml up -d pro'
                 sh 'timeout --preserve-status --foreground 30 docker-compose logs -f pro'
             }
         }
