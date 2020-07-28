@@ -1,0 +1,39 @@
+<HTML>
+
+<BODY bgcolor="cyan">
+    <form method="POST" action="">
+        <center>
+            <H1>WEIGHTS N' STUFF</H1> <br>
+
+            <label for="dir">Choose direction:</label>
+
+            <select name="dir" id="dir">
+                <option value="none">None</option>
+                <option value="in">In</option>
+                <option value="out">Out</option>
+            </select> <br>
+
+            Truck <input type="text" name="truck" /> <br>
+            Containers (use only comma and no spaces) <input type="text" name="containers" /> <br>            
+            Weight <input type="text" name="weight" /> <br>
+            
+            <label for="unit">Choose unit:</label>
+
+            <select name="unit" id="unit">
+                <option value="kg">KG</option>
+                <option value="lbs">LBS</option>
+            </select> <br>
+
+            <div>
+                <input type="checkbox" id="force" name="force">
+                <label for="force">Force</label>
+            </div>
+
+            Produce <input type="text" name="produce" /> <br>
+            
+            <input type="submit">
+        </center>
+    </form>
+</BODY>
+
+</HTML>
