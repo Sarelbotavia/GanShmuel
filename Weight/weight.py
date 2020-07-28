@@ -1,4 +1,5 @@
 #!flask/bin/python
+from datetime import datetime
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 
@@ -39,7 +40,18 @@ def post_batch_weight():
 
 @app.route('/unknown', methods=['GET'])
 def get_unknown():
-    return "unknown"
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        query = "SELECT id FROM containers WHERE weight=0;"
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        cur.close()
+        return jsonify(res) 
+    
 
 
 @app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
@@ -47,9 +59,33 @@ def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
-def get_item_id():
-    return "item/<id>?from=t1&to=t2"
+@app.route('/item/<id>', methods=['GET'])
+# /item/<id>?from=t1&to=t2
+def get_item_id(id):
+    test_id=id
+    to=request.args.get('to')
+    from1=request.args.get('from')
+    # --20181218181512--20181221141414
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        
+        query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        if not res:
+            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            if not res:
+                return "not a valid id"
+        cur.close()
+        return jsonify(res)
+
 
 
 @app.route('/session/<id>', methods=['GET'])
