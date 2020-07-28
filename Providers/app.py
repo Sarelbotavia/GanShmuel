@@ -80,13 +80,6 @@ def get_bill():
     return "return render_template('index.html')"
 
 
-"""
-@app.route('/health', methods=['GET'])
-def get_health():
-    return "return render_template('index.html')"
-"""
-
-
 @app.route('/health', methods=['GET'])
 def get_health():
     query = "SELECT * FROM billdb;"
@@ -106,4 +99,3 @@ def get_health():
 app.run(host='0.0.0.0', port="5000")
 if __name__ == '__main__':
     app.run(debug=True)
-
