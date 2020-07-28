@@ -7,9 +7,7 @@ pipeline{
                 echo "========executing A========"
                 sh 'ls -ll'
                 sh 'docker-compose --version'
-                dir('Devops') {
-                    sh 'docker-compose up pro --build'
-                }
+                sh 'docker build -f flask.Dockerfile -t pro Providers'
             }
             post{
                 always{
