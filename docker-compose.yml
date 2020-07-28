@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  db:
+    container_name: db
+     - db:/var/lib/mysql
+    image: devops2030/gan_shmuel:latest
+    ports: 
+     - "3306:3306"
+  
+  pro:
+    build:
+      dockerfile: pro.Dockerfile
+      context: $PWD/Providers
+    container_name: pro
+    image: pro
+    entrypoint: sleep 99999999
+
+
+volumes:
+  db:
+    external: true
+
+networks:
+  default:
+    external:
+      name: nt
