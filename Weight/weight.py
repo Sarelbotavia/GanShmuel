@@ -1,6 +1,8 @@
 #!flask/bin/python
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
+import csv
+import json
 
 app = Flask(__name__)
 
@@ -32,32 +34,71 @@ def post_weight():
     return "weight"
 
 
-@app.route('/batch-weight', methods=['POST'])
+@app.route('/batch-weight', methods=['GET', 'POST'])
 def post_batch_weight():
-    return "batch-weight"
+    if request.method == "POST":
+        details = request.form
+        listfile = details['truck']
+
+        error = 0
+        errmsg = "New rows added.\nThe following rows cant be added probably due to uniqe ID already exist:\n"
+
+        if listfile.endswith('.csv'):
+            with open('in/' + listfile) as f:
+                reader = csv.reader(f)
+                data = [tuple(row) for row in reader]
+
+            unit = data[0][1]
+            if unit != "lbs" and unit != "kg":
+                error = 1
+                return "Error! Unknown unit, only LBS and KG are allowed :("
+
+            cur = mysql.connection.cursor()
+            for line in data[1:]:
+                try:
+                    cur.execute(
+                        "INSERT INTO containers(id, weight, unit) VALUES (%s, %s, %s)", (line[0], line[1], unit))
+                except:
+                    error = 1
+                    errmsg += line[0]+", "+line[1]+", "+unit+"\n"
+
+            mysql.connection.commit()
+            cur.close()
+
+        elif listfile.endswith('.json'):        # need to fix the part of pulling a list from
+            with open('in/' + listfile) as f:   # JSON file, right now it prints "u'" before everything
+                data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
+                print(data)
+                return "this part doesn't work, JSON files SUCK"
+
+        if error == 0:
+            return "New rows added! :)"
+        elif error == 1:
+            return errmsg
+    return render_template('batch.html')
 
 
-@app.route('/unknown', methods=['GET'])
+@ app.route('/unknown', methods=['GET'])
 def get_unknown():
     return "unknown"
 
 
-@app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
+@ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
 def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
+@ app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
 def get_item_id():
     return "item/<id>?from=t1&to=t2"
 
 
-@app.route('/session/<id>', methods=['GET'])
+@ app.route('/session/<id>', methods=['GET'])
 def get_session():
     return "session/<id>"
 
 
-@app.route('/health', methods=['GET'])
+@ app.route('/health', methods=['GET'])
 def get_health():
     try:
         cur = mysql.connection.cursor()
