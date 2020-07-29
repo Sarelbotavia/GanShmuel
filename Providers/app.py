@@ -87,7 +87,7 @@ def get_rates():
 @app.route('/truck/get', methods=['POST'])
 def add_truck():
     if request.method == "POST":
-        truck_licence = request.form.get("licence",)
+        truck_licence = request.form.get("licence")
         provider_id = request.form.get("provider_id", type=int)
         query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(
             truck_licence, provider_id)
