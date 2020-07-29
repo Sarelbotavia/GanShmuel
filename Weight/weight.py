@@ -118,11 +118,6 @@ def get_unknown():
     
 
 
-@ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
-def get_weight_from():
-    return "weight?from=t1&to=t2&filter=f"
-
-
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
 def get_item_id(id):
