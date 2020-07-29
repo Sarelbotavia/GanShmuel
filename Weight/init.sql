@@ -58,6 +58,7 @@ CREATE TABLE `sessions` (
   `neto` float DEFAULT NULL,
   `trucks_id` int(11) DEFAULT NULL,
   `products_id` int(11) DEFAULT NULL,
+  `containers_id` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -86,7 +87,7 @@ INSERT INTO containers (id,weight,unit) VALUES ('K-7854',854,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-6523',741,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-2369',120,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7845',999,'lbs');
-INSERT INTO containers (id,weight,unit) VALUES ('K-1234',111,'ks');
+INSERT INTO containers (id,weight,unit) VALUES ('K-126634',111,'ks');
 
 INSERT INTO products (product_name,rate,scope) VALUES ('Blood',122,'ALL');
 INSERT INTO products (product_name,rate,scope) VALUES ('Mandarin',103,'ALL');
@@ -110,12 +111,9 @@ INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',3);
 
 
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
-<<<<<<< HEAD
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181221141414', 800, 500, 77777, 1);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181220151515', 700, 600, 77777, 3);
-=======
->>>>>>> 1037bf78f940616787f76d54e6b46cd3bf00207f
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('out', '20170920102017', 741, 650, 12365, 3);
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id,containers_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2,'K-8263');
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id,containers_id) VALUES ('in', '20181221141414', 800, 500, 77777, 1,'K-7854');
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id,containers_id) VALUES ('in', '20181220151515', 700, 600, 77777, 3,'K-6523');
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id,containers_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1,'K-2369');
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id,containers_id) VALUES ('out', '20170920102017', 741, 650, 12365, 3,'K-1234');
 

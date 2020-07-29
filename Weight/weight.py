@@ -122,7 +122,7 @@ def get_weight_from():
 
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
-def get_item_id(id):
+def get_id(id):
     test_id=id
     to=request.args.get('to')
     from1=request.args.get('from')
@@ -133,15 +133,13 @@ def get_item_id(id):
     except:
         return "MYSQL_IS_DOWN"
     else:
-
-        
         query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
 
-            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -149,6 +147,45 @@ def get_item_id(id):
                 return "not a valid id"
         cur.close()
         return jsonify(res)
+
+
+
+
+@app.route('/item', methods=['POST']) #allow both GET and POST requests
+def get_item_id():
+
+    if request.method == 'POST':  #this block is only entered when the form is submitted
+        id=request.form.get('id')
+        from1=request.form['from']        
+        to=request.form['to']
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "MYSQL_IS_DOWN"
+        else:
+            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            if not res:
+
+                query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+                cur.execute(query)
+                mysql.connection.commit()
+                res = cur.fetchall()
+                if not res:
+                    return "not a valid id"
+            cur.close()
+            return jsonify(res)
+
+    return '''<form method="POST">
+                  id: <input type="text" name="id"><br>
+                  from: <input type="text" name="from"><br>
+                  to: <input type="text" name="to"><br>
+                  <input type="submit" value="Submit"><br>
+              </form>'''
+
+
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session():
