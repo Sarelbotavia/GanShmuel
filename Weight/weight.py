@@ -5,8 +5,8 @@ from flask_mysqldb import MySQL
 import csv
 import json
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, date
+#from typing import Optional      # << wtf is this
 
 
 
@@ -44,13 +44,34 @@ def post_weight():
         truck = details['truck']
         weight = details['weight']
         unit = details['unit']
-        force = request.form.get('force')
+        force = request.form.get('force') #None=false on=true
         produce = details['produce']
 
         if truck == "":
             truck="NA"
         if produce == "":
-            produce="NA"    
+            produce="NA"
+
+
+        cur = mysql.connection.cursor() #getting last id
+        cur.execute(
+            "SELECT id FROM sessions ORDER BY id DESC LIMIT 0, 1")
+        mysql.connection.commit()
+        res = cur.fetchall()
+
+        if res == (): #is the table empty?
+            if direction != "in":
+                return "ERROR: Empty table, no trucks inbound"
+            else:
+                pass
+
+        now = datetime.now() 
+        time=now.strftime("%Y%m%d%H%M%S")
+        cur.execute("INSERT INTO sessions(direction, date, bruto, trucks_id,products_id) VALUES (%s, %s, %s, %s, %s)", (direction, time ,weight, truck, produce))
+        
+        mysql.connection.commit()
+        cur.close()
+
         
         # whats left is to play with the SQL table and return json file
         # or just a string that looks like a jason file ;)
@@ -96,6 +117,9 @@ def post_batch_weight():
                 data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
                 print(data)
                 return "this part doesn't work, JSON files SUCK"
+
+        else:
+            return "Unsupported file, CSV or JSON files only"
 
         if error == 0:
             return "New rows added! :)"
