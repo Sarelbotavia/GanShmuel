@@ -1,9 +1,19 @@
 pipeline {
   agent any
   stages {
+    stage('Preparation') {
+      agent { docker { image 'python:3.6.9-alpine' } }
+      steps {
+        echo '======== executing Preparation Stage ========'
+        sh 'pip install --upgrade pip && pip install pipreqs'
+        sh 'pipreqs /Providers && pipreqs /Weight'
+        //stash(name: 'compiled-results', includes: 'sources/*.py*') 
+      }
+    }
     stage('Build') {
       steps {
         echo '======== executing Build Stage ========'
+        sh 'ls ll Providers'
         script {
           flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
           wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
@@ -36,7 +46,6 @@ pipeline {
 
           }
         }
-
       }
     }
 
