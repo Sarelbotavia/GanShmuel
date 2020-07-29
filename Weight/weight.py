@@ -199,22 +199,34 @@ def get_unknown():
         return jsonify(res) 
     
 
-# @ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
-# def post_batch_weight():
-#     to=request.args.get('to')
-#     from1=request.args.get('from')
-#     filter1=request.args.get('filter')
-#     try:
-#         cur = mysql.connection.cursor()
-#     except:
-#         return "MYSQL_IS_DOWN"
-#     else:
-#         query = "SELECT id FROM containers WHERE weight=0;"
-#         cur.execute(query)
-#         mysql.connection.commit()
-#         res = cur.fetchall()
-#         cur.close()
-#         return jsonify(res) 
+@ app.route('/getweight?from=t1&to=t2&filter=f', methods=['GET'])
+def get_weight():
+    
+    to=request.args.get('to')
+    from1=request.args.get('from')
+    filter1=request.args.get('filter')
+    now = datetime.now()
+
+    if not from1:
+        from1=now.strftime("%Y%m%d")+"000000"
+    if not to:
+        now = datetime.now() 
+        to=now.strftime("%Y%m%d%H%M%S")
+    if not filter1:
+        filter1="in,out,none"
+    
+    for direction in filter1.split(','):
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "MYSQL_IS_DOWN"
+        else:
+            query = ("SELECT sessions.id, sessions.direction, sessions.bruto, sessions.neto, sessions.products_id, containers_has_sessions.id FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (sessions.direction='{}') AND (date BETWEEN '{}' AND '{}');".format(direction,from1,to))
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+            return jsonify(res) 
 
 
 
