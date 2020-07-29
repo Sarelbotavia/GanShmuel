@@ -47,7 +47,6 @@ CREATE TABLE `sessions` (
   `neto` float DEFAULT NULL,
   `trucks_id` int(11) DEFAULT NULL,
   `products_id` int(11) DEFAULT NULL,
-  `containers_id` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -91,6 +90,7 @@ INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('12365',4,854,'lbs')
 
 
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
+INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20200718181512', 999, 800, 77777, 2);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181221141414', 800, 500, 77777, 1);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181220151515', 700, 600, 77777, 3);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1);

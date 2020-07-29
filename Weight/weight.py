@@ -1,12 +1,11 @@
 #!flask/bin/python
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template,request
 from flask_mysqldb import MySQL
 import csv
 import json
-
 from datetime import datetime
-from typing import Optional
+# from typing import Optional
 
 
 app = Flask(__name__)
@@ -17,7 +16,8 @@ app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
-now=datetime.now()
+now=datetime.now() 
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -126,9 +126,14 @@ def get_weight_from():
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
 def get_id(id):
+    time=now.strftime("%Y%m")
     test_id=id
     to=request.args.get('to')
+    if not to:
+        to=now.strftime("%Y%m%d%H%M%S")
     from1=request.args.get('from')
+    if not from1:
+        from1=time + '01000000'
     # --20181218181512--20181221141414
 
     try:
@@ -141,27 +146,34 @@ def get_id(id):
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
+            
 
-            query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
 
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
             if not res:
                 return "not a valid id"
+                
+        print(res)        
         cur.close()
         return jsonify(res)
 
 
 
 
-@app.route('/item', methods=['POST']) #allow both GET and POST requests
+@app.route('/item', methods=['GET','POST']) #allow both GET and POST requests
 def get_item_id():
-
+    time=now.strftime("%Y%m")
     if request.method == 'POST':  #this block is only entered when the form is submitted
         id=request.form.get('id')
-        from1=request.form['from']        
+        from1=request.form['from']
+        if not from1:
+            from1=time + '01000000'       
         to=request.form['to']
+        if not to:
+            to=now.strftime("%Y%m%d%H%M%S")
         try:
             cur = mysql.connection.cursor()
         except:
@@ -172,13 +184,13 @@ def get_item_id():
             mysql.connection.commit()
             res = cur.fetchall()
             if not res:
-
-                query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
-                cur.execute(query)
-                mysql.connection.commit()
-                res = cur.fetchall()
-                if not res:
-                    return "not a valid id"
+                return "not a valid data"
+                # query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+                # cur.execute(query)
+                # mysql.connection.commit()
+                # res = cur.fetchall()
+                # if not res:
+                            
             cur.close()
             return jsonify(res)
 
