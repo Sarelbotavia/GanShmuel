@@ -6,7 +6,7 @@ import csv
 import json
 
 from datetime import datetime, date
-#from typing import Optional      # << wtf is this
+#from typing import Optional       # << wtf is this
 
 
 app = Flask(__name__)
@@ -45,11 +45,9 @@ def post_weight():
         force = request.form.get('force') #None=false on=true
         produce = details['produce']
 
-        if truck == "":
-            truck="NA"
-        if produce == "":
-            produce="NA"
 
+        if weight == "":
+            return "Error: Weight cant be empty"
 
         cur = mysql.connection.cursor() #getting last id
         cur.execute(
@@ -57,23 +55,70 @@ def post_weight():
         mysql.connection.commit()
         res = cur.fetchall()
 
+        cur.execute( #getting last direction
+            "SELECT direction FROM sessions ORDER BY id DESC LIMIT 0, 1")
+        mysql.connection.commit()
+        olddir = cur.fetchall()
+        olddir = olddir[0][0]
+
         if res == (): #is the table empty?
             if direction != "in":
                 return "ERROR: Empty table, no trucks inbound"
             else:
-                pass
-
-        now = datetime.now() 
-        time=now.strftime("%Y%m%d%H%M%S")
-        cur.execute("INSERT INTO sessions(direction, date, bruto, trucks_id,products_id) VALUES (%s, %s, %s, %s, %s)", (direction, time ,weight, truck, produce))
+                res=0
+        else:
+            res=res[0][0] #its not empty, this is the last id avilable
         
+        if direction == "in" or direction == "none":
+            if olddir == "in" and force == "None" and direction == "in":
+                return "Error: Cant do 'in' after another 'in' without forcing it"
+            elif olddir == "in" and force == "on" and direction == "in":
+                res-=1 # going to the last id to override it
+            elif olddir == "in" and direction == "none":
+                return "Error: Cant use 'none' while 'in' is in progress (truck inside doing stuff)"
+            
+            now = datetime.now() 
+            time=now.strftime("%Y%m%d%H%M%S")
+            cur.execute("INSERT INTO sessions(direction, date, bruto) VALUES (%s, %s, %s)", (direction, time ,weight))
+            mysql.connection.commit()
+
+            if truck == "":
+                truck="NA"
+            else:
+                cur.execute("UPDATE sessions SET trucks_id=%s WHERE id=%s;", (truck, res+1))
+
+            if produce == "":
+                produce="NA"
+            else:
+                cur.execute("UPDATE sessions SET products_id=%s WHERE id=%s;", (produce, res+1))
+
+
+        elif direction=="out":
+            if olddir=="out" and force=="on":
+                res-=1 #overriding out
+            elif olddir=="out" or olddir=="none":
+                return "Error: Cant 'out' without an 'in' (no truck to get out)"
+        
+        
+            cur.execute("UPDATE sessions SET neto=%s WHERE id=%s;", (weight, res+1))
+
         mysql.connection.commit()
-        cur.close()
-
         
-        # whats left is to play with the SQL table and return json file
-        # or just a string that looks like a jason file ;)
-        # and answer currently (failed because of ... or succeed and retun json)
+        if direction != "out":
+            cur.execute("SELECT id, trucks_id, bruto FROM sessions WHERE id=%s;",(res+1,))
+            mysql.connection.commit()
+            jsoner = cur.fetchall()
+            cur.close()
+            return jsonify(jsoner)
+        else:
+            cur.execute(
+                "SELECT id, trucks_id, bruto,(bruto-neto) as 'Truck weight', neto FROM sessions WHERE id=%s;", (res+1,))
+            mysql.connection.commit()
+            jsoner = cur.fetchall()
+            cur.close()
+            return jsonify(jsoner)
+
+        #whats left is the motherlucking container part 
 
 
     return render_template('weight.html')
@@ -113,7 +158,8 @@ def post_batch_weight():
         elif listfile.endswith('.json'):        # need to fix the part of pulling a list from
             with open('in/' + listfile) as f:   # JSON file, right now it prints "u'" before everything
                 data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
-                print(data)
+                for line in data: 
+                    print(line.values()[0])     #fix this part
                 return "this part doesn't work, JSON files SUCK"
 
         else:
@@ -234,6 +280,6 @@ def get_health():
 # def get_tasks():
 #     return jsonify({'tasks': tasks})
 
-app.run(host='0.0.0.0', port=5000)
+
 if __name__ == '__main__':
     app.run()
