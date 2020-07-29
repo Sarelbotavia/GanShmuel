@@ -18,8 +18,10 @@ pipeline {
     stage('Build') {
       steps {
         echo '======== executing Build Stage ========'
-        sh 'ls -ll Weight'
-        unstash 'results' 
+        unstash 'results'
+        sh 'ls -R'
+        //sh 'ls -ll Weight'
+        sh 'sleep 10'
         script {
           flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
           wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
