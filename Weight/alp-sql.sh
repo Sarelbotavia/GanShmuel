@@ -5,6 +5,7 @@ apk add --no-cache --virtual .build-deps gcc libc-dev linux-headers
 echo "pip install mysqlclient"
 #pip install pipreqs
 #pipreqs /app
+ls -R
 pip install -r requirements.txt
 #pip install mysqlclient flask flask-mysqldb pipreqs
 echo "apk del .build-deps"
