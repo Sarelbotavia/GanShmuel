@@ -1,6 +1,6 @@
 pipeline{
     agent any
-    
+
     stages {
         stage("Build") {
             steps {
@@ -31,7 +31,7 @@ pipeline{
                         script {
                             wgt.withRun('--net nt --name wt') {
                                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
-                                    --retry-connrefused --silent --fail wt:5000'
+                                    --retry-connrefused --silent wt:5000'
                             }
                         }
                     }
