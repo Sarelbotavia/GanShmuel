@@ -1,13 +1,12 @@
 #!flask/bin/python
-"""
-from datetime import datetime
+
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
-"""
-from flask import Flask, jsonify, render_template, request
-from flask_mysqldb import MySQL
+
+from datetime import datetime, date
+#from typing import Optional      # << wtf is this
 
 
 app = Flask(__name__)
@@ -18,7 +17,7 @@ app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
-
+now=datetime.now()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -43,13 +42,34 @@ def post_weight():
         truck = details['truck']
         weight = details['weight']
         unit = details['unit']
-        force = request.form.get('force')
+        force = request.form.get('force') #None=false on=true
         produce = details['produce']
 
         if truck == "":
             truck="NA"
         if produce == "":
-            produce="NA"    
+            produce="NA"
+
+
+        cur = mysql.connection.cursor() #getting last id
+        cur.execute(
+            "SELECT id FROM sessions ORDER BY id DESC LIMIT 0, 1")
+        mysql.connection.commit()
+        res = cur.fetchall()
+
+        if res == (): #is the table empty?
+            if direction != "in":
+                return "ERROR: Empty table, no trucks inbound"
+            else:
+                pass
+
+        now = datetime.now() 
+        time=now.strftime("%Y%m%d%H%M%S")
+        cur.execute("INSERT INTO sessions(direction, date, bruto, trucks_id,products_id) VALUES (%s, %s, %s, %s, %s)", (direction, time ,weight, truck, produce))
+        
+        mysql.connection.commit()
+        cur.close()
+
         
         # whats left is to play with the SQL table and return json file
         # or just a string that looks like a jason file ;)
@@ -96,6 +116,9 @@ def post_batch_weight():
                 print(data)
                 return "this part doesn't work, JSON files SUCK"
 
+        else:
+            return "Unsupported file, CSV or JSON files only"
+
         if error == 0:
             return "New rows added! :)"
         elif error == 1:
@@ -123,9 +146,10 @@ def get_unknown():
 def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
+
 @app.route('/item/<id>', methods=['GET'])
 # /item/<id>?from=t1&to=t2
-def get_item_id(id):
+def get_id(id):
     test_id=id
     to=request.args.get('to')
     from1=request.args.get('from')
@@ -136,15 +160,14 @@ def get_item_id(id):
     except:
         return "MYSQL_IS_DOWN"
     else:
-
-        
         query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
 
-            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -152,6 +175,45 @@ def get_item_id(id):
                 return "not a valid id"
         cur.close()
         return jsonify(res)
+
+
+
+
+@app.route('/item', methods=['POST']) #allow both GET and POST requests
+def get_item_id():
+
+    if request.method == 'POST':  #this block is only entered when the form is submitted
+        id=request.form.get('id')
+        from1=request.form['from']        
+        to=request.form['to']
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "MYSQL_IS_DOWN"
+        else:
+            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            if not res:
+
+                query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+                cur.execute(query)
+                mysql.connection.commit()
+                res = cur.fetchall()
+                if not res:
+                    return "not a valid id"
+            cur.close()
+            return jsonify(res)
+
+    return '''<form method="POST">
+                  id: <input type="text" name="id"><br>
+                  from: <input type="text" name="from"><br>
+                  to: <input type="text" name="to"><br>
+                  <input type="submit" value="Submit"><br>
+              </form>'''
+
+
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session():
