@@ -5,7 +5,7 @@ pipeline {
       agent { 
         docker { 
           image 'python:3.6.9-alpine' 
-          args '--tmpfs /.config'
+          args '-u root:root'
           } 
         }
       steps {
