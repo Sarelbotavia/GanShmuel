@@ -11,7 +11,7 @@ pipeline {
       steps {
         echo '======== executing Preparation Stage ========'
         sh 'pip install --upgrade pip && pip install pipreqs'
-        sh 'pipreqs /Providers && pipreqs /Weight'
+        sh 'pipreqs Providers && pipreqs Weight'
         //stash(name: 'compiled-results', includes: 'sources/*.py*') 
       }
     }
