@@ -9,8 +9,6 @@ from datetime import datetime
 from typing import Optional
 
 
-
-
 app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = '127.0.0.1'
@@ -150,7 +148,6 @@ def get_item_id(id):
             if not res:
                 return "not a valid id"
         cur.close()
-        res=first_time
         return jsonify(res)
 
 @ app.route('/session/<id>', methods=['GET'])
