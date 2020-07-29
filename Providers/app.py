@@ -3,6 +3,8 @@ import os
 from flask import Flask, jsonify
 from flask import render_template
 from flask import request
+import requests
+import json
 from flask_mysqldb import MySQL
 # from config import Config
 # from flask_migrate import Migrate
@@ -24,6 +26,17 @@ mysql = MySQL(app)
 
 
 # =================================================================
+
+# Global methods :
+
+def get(url):
+    try:
+        res = requests.get(url)
+        return jsonify(res.json())
+    except:
+        return "cant connect to the api"
+
+# ====================================================================
 
 
 # Routing:
@@ -105,7 +118,10 @@ def update_truck():
 
 @app.route('/truck/getbyid', methods=['GET'])
 def load_get_trucks_form():
-    return render_template('truck7.html')
+    test = get("http://localhost:5000/health")  # weight team API goes here
+    print(test)
+    return test
+    # return render_template('truck7.html')
 
 
 @app.route('/truck/<id>?from=t1&to=t2', methods=['GET'])
