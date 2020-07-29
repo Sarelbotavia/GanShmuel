@@ -12,13 +12,14 @@ pipeline {
         echo '======== executing Preparation Stage ========'
         sh 'pip install --upgrade pip && pip install pipreqs'
         sh 'pipreqs --force Providers && pipreqs --force Weight'
-        //stash(name: 'compiled-results', includes: 'sources/*.py*') 
+        stash(name: 'results', includes: 'Providers/requirements.txt, Weight/requirements.txt') 
       }
     }
     stage('Build') {
       steps {
         echo '======== executing Build Stage ========'
         sh 'ls -ll Weight'
+        unstash 'results' 
         script {
           flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
           wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
