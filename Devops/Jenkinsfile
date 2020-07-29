@@ -8,28 +8,25 @@ pipeline {
           flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
           wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
         }
-
       }
     }
-
     stage('Test') {
       parallel {
         stage('Pro') {
           steps {
             echo '======== executing Test Stage ========'
-            sh 'docker ps | grep pt && docker stop pt && docker rm pt || :'
+            sh 'docker container ls -a | grep pt && docker stop wt && docker rm wt || :'
             script {
               flask.withRun('--net nt --name pt') {
                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
                 --retry-connrefused --silent --fail pt:5000'
               }
             }
-
           }
         }
         stage('Wgt') {
           steps {
-            sh 'docker container ls -a | grep wt && docker stop wt; docker rm wt || :'
+            sh 'docker container ls -a | grep wt && docker stop wt && docker rm wt || :'
             script {
               wgt.withRun('--net nt --name wt', '--python --./weight.py') {
                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
