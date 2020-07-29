@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `Providers` (
   `provider_name` varchar(255) DEFAULT NULL,
   `payment_timing` varchar(1) DEFAULT 'd',
   PRIMARY KEY (`provider_id`)
+  UNIQUE KEY (`provider_name`)
 ) ENGINE=MyISAM  AUTO_INCREMENT=10001 ;
 
 DROP TABLE IF EXISTS `Products`;
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `Trucks` (
   `truck_id` varchar(11) NOT NULL,
   `provider_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`truck_id`),
+  UNIQUE KEY `id_UNIQUE` (`truck_id`)
   FOREIGN KEY (`provider_id`) REFERENCES `Providers`(`provider_id`)
 ) ENGINE=MyISAM ;
 -- -------------------------------------------------------------------------------

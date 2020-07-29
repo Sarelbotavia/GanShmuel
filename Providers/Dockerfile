@@ -11,6 +11,8 @@ RUN pip install -r requirements.txt
 RUN apt install python3-flask -y
 RUN pip install flask
 RUN pip install flask-mysqldb
+RUN pip install pandas
+RUN pip install xlrd
 
 RUN set FLASK_APP=app.py
 
