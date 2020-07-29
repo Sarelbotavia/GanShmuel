@@ -1,8 +1,7 @@
 FROM python:3.6.9-alpine
 RUN apk update && apk add mariadb-dev
-RUN echo "http://dl-8.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-    && apk update \
-    && apk add py3-numpy py3-pandas
+RUN echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk add --update --no-cache py3-numpy py3-pandas@testing
 RUN pip install --upgrade pip
 COPY . /
 COPY alp-sql.sh /alp.sh
