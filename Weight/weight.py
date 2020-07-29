@@ -67,18 +67,22 @@ def post_weight():
                 res=0
         else:
             res=res[0][0] #its not empty, this is the last id avilable
-        
+            
         if direction == "in" or direction == "none":
-            if olddir == "in" and force == "None" and direction == "in":
-                return "Error: Cant do 'in' after another 'in' without forcing it"
-            elif olddir == "in" and force == "on" and direction == "in":
-                res-=1 # going to the last id to override it
+            if olddir == "in" and direction == "in":
+                if force != "on":
+                    return "Error: Cant do 'in' after another 'in' without forcing it"
+                else:
+                    res=res-1 # going to the last id to override it
             elif olddir == "in" and direction == "none":
                 return "Error: Cant use 'none' while 'in' is in progress (truck inside doing stuff)"
             
             now = datetime.now() 
             time=now.strftime("%Y%m%d%H%M%S")
-            cur.execute("INSERT INTO sessions(direction, date, bruto) VALUES (%s, %s, %s)", (direction, time ,weight))
+            if olddir != "in" and (direction == "in" or direction == "none"):
+                cur.execute("INSERT INTO sessions(direction, date, bruto) VALUES (%s, %s, %s)", (direction, time ,weight))
+            else:
+                cur.execute("UPDATE sessions SET direction=%s, date=%s, bruto=%s where id=%s", (direction, time ,weight,res+1))
             mysql.connection.commit()
 
             if truck == "":
@@ -92,17 +96,26 @@ def post_weight():
                 cur.execute("UPDATE sessions SET products_id=%s WHERE id=%s;", (produce, res+1))
 
 
-        elif direction=="out":
-            if olddir=="out" and force=="on":
-                res-=1 #overriding out
-            elif olddir=="out" or olddir=="none":
-                return "Error: Cant 'out' without an 'in' (no truck to get out)"
-        
-        
-            cur.execute("UPDATE sessions SET neto=%s WHERE id=%s;", (weight, res+1))
 
+
+
+        elif direction=="out":
+            if olddir=="none" or (force != "on" and olddir=="out"):
+                return "Error: Cant 'out' without an 'in' (no truck to get out, you can force it if its 'out')"
+            
+        
+            cur.execute("UPDATE sessions SET neto=%s, direction=%s WHERE id=%s;", (weight, direction, res))
+
+        #for word in containers.split(','):
+        #    print(word)
+        
+        
+        
+        
+        
         mysql.connection.commit()
         
+
         if direction != "out":
             cur.execute("SELECT id, trucks_id, bruto FROM sessions WHERE id=%s;",(res+1,))
             mysql.connection.commit()
@@ -111,7 +124,7 @@ def post_weight():
             return jsonify(jsoner)
         else:
             cur.execute(
-                "SELECT id, trucks_id, bruto,(bruto-neto) as 'Truck weight', neto FROM sessions WHERE id=%s;", (res+1,))
+                "SELECT id, trucks_id, bruto,(bruto-neto) as 'Truck weight', neto FROM sessions WHERE id=%s;", (res,))
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
@@ -158,7 +171,7 @@ def post_batch_weight():
             with open('in/' + listfile) as f:   # JSON file, right now it prints "u'" before everything
                 data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
                 for line in data: 
-                    print(line.values()[0])     #fix this part
+                    print(line.values()[0])     #tommorow finish this part and this POST command is ready
                 return "this part doesn't work, JSON files SUCK"
 
         else:
