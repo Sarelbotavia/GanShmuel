@@ -3,6 +3,8 @@ from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
+from datetime import datetime
+from typing import Optional
 
 app = Flask(__name__)
 
@@ -12,7 +14,7 @@ app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
-
+now=datetime.now()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -88,14 +90,19 @@ def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
-def get_item_id(id):
+@app.route('/item/<id>?time=t1&to=t2', methods=['GET'])
+def get_item_id(id, t1, t2):
     test_id=id
+    first_time=t1
+    # second_time=t2
+
     try:
         cur = mysql.connection.cursor()
     except:
         return "MYSQL_IS_DOWN"
     else:
+        # print(first_time)
+        # print(second_time)
         query = ("SELECT trucks_id, id, date, bruto FROM sessions WHERE trucks_id='{}';".format(test_id))
         cur.execute(query)
         mysql.connection.commit()
@@ -108,6 +115,7 @@ def get_item_id(id):
             if not res:
                 return "not a valid id"
         cur.close()
+        res=first_time
         return jsonify(res)
  
 
