@@ -15,5 +15,6 @@ services:
       - 3306:3306
 
 volumes:
-  my_dbe:
-    
+  my_db:
+    external: true
+

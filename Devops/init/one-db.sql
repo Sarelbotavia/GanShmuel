@@ -1,6 +1,11 @@
 
-CREATE DATABASE  IF NOT EXISTS `weight_db`;
-USE `weight_db`;
+CREATE DATABASE  IF NOT EXISTS `db` /* Blue's db! */;
+USE `db`;
+-- MySQL dump 10.13  Distrib 5.7.25, for Linux (x86_64)
+--
+-- Host: 127.0.0.1    Database: db
+-- ------------------------------------------------------
+-- Server version	8.0.15
 
 
 DROP TABLE IF EXISTS `containers`;
@@ -24,6 +29,15 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `providers`;
+CREATE TABLE `providers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `providername` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `trucks`;
 CREATE TABLE `trucks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -36,24 +50,22 @@ CREATE TABLE `trucks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-
-DROP TABLE IF EXISTS `containers_has_sessions`;
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `direction` enum('in','out','none') DEFAULT NULL,
+  `f` bool DEFAULT NULL,
   `date` varchar(45) DEFAULT NULL,
   `bruto` float DEFAULT NULL,
   `neto` float DEFAULT NULL,
   `trucks_id` int(11) DEFAULT NULL,
   `products_id` int(11) DEFAULT NULL,
-  `containers_id` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-
+DROP TABLE IF EXISTS `containers_has_sessions`;
 CREATE TABLE `containers_has_sessions` (
   `containers_id` varchar(45) NOT NULL,
   `sessions_id` int(11) NOT NULL,
@@ -64,15 +76,18 @@ CREATE TABLE `containers_has_sessions` (
   CONSTRAINT `fk_containers_has_sessions_sessions1` FOREIGN KEY (`sessions_id`) REFERENCES `sessions` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `trucks` (`id`, `truckid`) VALUES (1, 'none');
+
+INSERT INTO providers (providername) VALUES ('Tapuzina');
+INSERT INTO providers (providername) VALUES ('Herut');
+INSERT INTO providers (providername) VALUES ('Mishmeret');
+INSERT INTO providers (providername) VALUES ('KfarHess');
 
 INSERT INTO containers (id,weight,unit) VALUES ('K-8263',666,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7854',854,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-6523',741,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-2369',120,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7845',999,'lbs');
-
-INSERT INTO containers (id,weight,unit) VALUES ('K-1234',123,'kg');
-
 
 INSERT INTO products (product_name,rate,scope) VALUES ('Blood',122,'ALL');
 INSERT INTO products (product_name,rate,scope) VALUES ('Mandarin',103,'ALL');
@@ -89,17 +104,9 @@ INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('66321',3,741,'kg');
 INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('12365',4,854,'lbs');
 
 
+INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('in', 1, '20181218181512', 999, 800, 77777, 2);
+INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('in', 1, '20161218181512', 120, 100, 99888, 1);
+INSERT INTO sessions (direction, f, date, bruto, neto, trucks_id, products_id) VALUES ('out', 1, '20170920102017', 741, 650, 12365, 3);
 
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181221141414', 800, 500, 77777, 1);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181220151515', 700, 600, 77777, 3);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20161218181512', 120, 100, 99888, 1);
-INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('out', '20170920102017', 741, 650, 12365, 3);
-
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-8263',1);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7854',2);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',3);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-2369',1);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845',2);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',3);
-
+GRANT ALL PRIVILEGES ON db.* TO 'Weight'@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON db.* TO 'provider'@'%' WITH GRANT OPTION;

@@ -1,9 +1,13 @@
 #!flask/bin/python
-from datetime import datetime
+
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
+
+from datetime import datetime
+from typing import Optional
+
 
 app = Flask(__name__)
 
@@ -13,7 +17,7 @@ app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
-
+now=datetime.now()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -28,7 +32,6 @@ def index():
         cur.close()
         return 'success'
     return render_template('index.html')
-
 
 @app.route('/weight', methods=['GET','POST'])
 def post_weight():
@@ -140,6 +143,7 @@ def get_id(id):
         if not res:
 
             query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -199,7 +203,6 @@ def get_health():
     except:
         return "MYSQL_IS_DOWN"
     else:
-
         cur.close()
         return "RUNNING"
 
