@@ -1,10 +1,15 @@
 #!flask/bin/python
+
 from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
+
 from datetime import datetime
 from typing import Optional
+
+
+
 
 app = Flask(__name__)
 
@@ -30,10 +35,29 @@ def index():
         return 'success'
     return render_template('index.html')
 
-
-@app.route('/weight', methods=['POST'])
+@app.route('/weight', methods=['GET','POST'])
 def post_weight():
-    return "weight"
+    if request.method == "POST":
+        details = request.form
+        direction = details['dir']
+        containers = details['containers']
+        truck = details['truck']
+        weight = details['weight']
+        unit = details['unit']
+        force = request.form.get('force')
+        produce = details['produce']
+
+        if truck == "":
+            truck="NA"
+        if produce == "":
+            produce="NA"    
+        
+        # whats left is to play with the SQL table and return json file
+        # or just a string that looks like a jason file ;)
+        # and answer currently (failed because of ... or succeed and retun json)
+
+
+    return render_template('weight.html')
 
 
 @app.route('/batch-weight', methods=['GET', 'POST'])
@@ -82,7 +106,18 @@ def post_batch_weight():
 
 @ app.route('/unknown', methods=['GET'])
 def get_unknown():
-    return "unknown"
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        query = "SELECT id FROM containers WHERE weight=0;"
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        cur.close()
+        return jsonify(res) 
+    
 
 
 @ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
@@ -90,25 +125,25 @@ def get_weight_from():
     return "weight?from=t1&to=t2&filter=f"
 
 
-@app.route('/item/<id>?time=t1&to=t2', methods=['GET'])
-def get_item_id(id, t1, t2):
+@app.route('/item/<id>', methods=['GET'])
+# /item/<id>?from=t1&to=t2
+def get_item_id(id):
     test_id=id
-    first_time=t1
-    # second_time=t2
+    to=request.args.get('to')
+    from1=request.args.get('from')
+    # --20181218181512--20181221141414
 
     try:
         cur = mysql.connection.cursor()
     except:
         return "MYSQL_IS_DOWN"
-    else:
-        # print(first_time)
-        # print(second_time)
-        query = ("SELECT trucks_id, id, date, bruto FROM sessions WHERE trucks_id='{}';".format(test_id))
+    else:  
+        query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
-            query = ("SELECT id FROM containers WHERE id='{}';".format(test_id))
+            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -117,7 +152,6 @@ def get_item_id(id, t1, t2):
         cur.close()
         res=first_time
         return jsonify(res)
- 
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session():
@@ -131,7 +165,6 @@ def get_health():
     except:
         return "MYSQL_IS_DOWN"
     else:
-
         cur.close()
         return "RUNNING"
 
