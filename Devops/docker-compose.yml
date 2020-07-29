@@ -30,6 +30,7 @@ services:
     image: wgt
     ports: 
      - "8089:5000"
+    command: python ./weight.py
 
 volumes:
   db:
