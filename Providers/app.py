@@ -4,6 +4,8 @@ import pandas as pd
 from flask import Flask, jsonify,send_file
 from flask import render_template
 from flask import request
+import requests
+import json
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 
@@ -19,12 +21,13 @@ project_root = os.path.dirname(__file__)
 template_path = os.path.join(project_root, './templates')
 app = Flask(__name__, template_folder=template_path)
 
-
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config['MYSQL_HOST'] = 'db'
+app.config['MYSQL_HOST'] = 'Blue.develeap.com'
 app.config['MYSQL_USER'] = 'provider'
 app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'billdb'
+app.config['MYSQL_PORT'] = 8086
 
 mysql = MySQL(app)
 
@@ -32,6 +35,17 @@ mysql = MySQL(app)
 
 
 # =================================================================
+
+# Global methods :
+
+def get(url):
+    try:
+        res = requests.get(url)
+        return jsonify(res.json())
+    except:
+        return "cant connect to the api"
+
+# ====================================================================
 
 
 # Routing:
@@ -62,11 +76,6 @@ def get_tasks():
 @app.route('/provider/add', methods=['GET'])
 def load_form():
     return render_template('index.html')
-
-
-# @app.route('/api/healthy', methods=['GET'])
-# def get_tasks():
-#     return jsonify({'tasks': tasks})
 
 
 @app.route('/provider/{id}', methods=['PUT'])
@@ -144,19 +153,52 @@ def get_rates():
     return send_file(LAST_UPLOADED_EXCEL, as_attachment=True)
 
 
-@app.route('/truck', methods=['POST'])
+@app.route('/truck/get', methods=['POST'])
 def add_truck():
-    return "return render_template('index.html')"
+    if request.method == "POST":
+        truck_licence = request.form.get("licence")
+        provider_id = request.form.get("provider_id", type=int)
+        query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(
+            truck_licence, provider_id)
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "Faild connection to db,MYSQL_IS_DOWN"
+        else:
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+            return jsonify(res)
+
+
+@app.route('/truck/add', methods=['GET'])
+def load_setTruck():
+    if request.method == "GET":
+        return render_template('setTruck.html')
 
 
 @app.route('/truck/{id}', methods=['PUT'])
 def update_truck():
     return "return render_template('index.html')"
 
+# ===========================================================================
+
+
+@app.route('/truck/getbyid', methods=['GET'])
+def load_get_trucks_form():
+    test = get("http://localhost:5000/health")  # weight team API goes here
+    print(test)
+    return test
+    # return render_template('truck7.html')
+
 
 @app.route('/truck/<id>?from=t1&to=t2', methods=['GET'])
 def get_truck():
     return "return render_template('index.html')"
+
+
+# ===========================================================================
 
 
 @app.route('/bill/<id>?from=t1&to=t2', methods=['GET'])
@@ -170,10 +212,10 @@ def get_health():
     try:
         cur = mysql.connection.cursor()
     except:
-        return "MYSQL_IS_DOWN"
+        return jsonify(cur)
     else:
         # test that the DB is alive by selecting data:
-        query = "SELECT * from Provider;"
+        query = "SELECT * from Providers;"
         cur = mysql.connection.cursor()
         cur.execute(query)
         mysql.connection.commit()
@@ -187,6 +229,4 @@ def get_health():
 #     return jsonify({'tasks': tasks})
 
 
-app.run(host='0.0.0.0', port=5000)
-if __name__ == '__main__':
-    app.run(debug=True)
+app.run(debug=True, host='0.0.0.0', port=5000)

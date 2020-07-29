@@ -5,6 +5,6 @@ COPY alp-sql.sh /alp.sh
 RUN chmod +x /alp.sh
 RUN ./alp.sh
 #RUN export FLASK_APP=app.py
-COPY * /
+COPY . /
 CMD ["python", "./app.py"]
 
