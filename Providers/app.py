@@ -75,8 +75,9 @@ def get_rates():
 def add_truck():
     if request.method == "POST":
         truck_licence = request.form.get("licence",)
-        provider_id = request.form.get("provider_id",type=int)
-        query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence,provider_id)
+        provider_id = request.form.get("provider_id", type=int)
+        query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(
+            truck_licence, provider_id)
         try:
             cur = mysql.connection.cursor()
         except:
@@ -87,10 +88,12 @@ def add_truck():
             res = cur.fetchall()
             cur.close()
             return jsonify(res)
+
+
 @app.route('/truck/add', methods=['GET'])
 def load_setTruck():
     if request.method == "GET":
-        return  render_template('setTruck.html')
+        return render_template('setTruck.html')
 
 
 @app.route('/truck/{id}', methods=['PUT'])
@@ -141,5 +144,4 @@ def get_health():
 #     return jsonify({'tasks': tasks})
 
 
-app.run(debug=True,host='0.0.0.0', port=5000)
-
+app.run(debug=True, host='0.0.0.0', port=5000)
