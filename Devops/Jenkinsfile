@@ -2,7 +2,12 @@ pipeline {
   agent any
   stages {
     stage('Preparation') {
-      agent { docker { image 'python:3.6.9-alpine' args '--tmpfs /.config'} }
+      agent { 
+        docker { 
+          image 'python:3.6.9-alpine' 
+          args '--tmpfs /.config'
+          } 
+        }
       steps {
         echo '======== executing Preparation Stage ========'
         sh 'pip install --upgrade pip && pip install pipreqs'
