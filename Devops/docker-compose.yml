@@ -15,12 +15,21 @@ services:
   
   pro:
     build:
-      dockerfile: flask.Dockerfile
+      dockerfile: ../Providers/flask.Dockerfile
       context: ../Providers
     container_name: pro
     image: pro
     ports: 
      - "8090:5000"
+
+  wgt:
+    build:
+      dockerfile: ../Providers/flask.Dockerfile
+      context: ../Weight
+    container_name: wgt
+    image: wgt
+    ports: 
+     - "8089:5000"
 
 volumes:
   db:

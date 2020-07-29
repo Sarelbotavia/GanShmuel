@@ -1,23 +1,39 @@
 pipeline{
     agent any
-    // t
+    
     stages {
         stage("Build") {
             steps {
                 echo "======== executing Build Stage ========"
                 script {
                     flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
+                    wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
                 }
             }
         }
         stage("Test") {
-            steps {
-                echo "======== executing Test Stage ========"
-                sh 'docker ps | grep pt && docker stop pt && docker rm pt || :'
-                script {
-                    flask.withRun('--net nt --name pt') {
-                        sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
-                            --retry-connrefused --silent --fail pro:5000'
+            parallel {
+                stage("Pro") {
+                    steps {
+                        echo "======== executing Test Stage ========"
+                        sh 'docker ps | grep pt && docker stop pt && docker rm pt || :'
+                        script {
+                            flask.withRun('--net nt --name pt') {
+                                sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
+                                    --retry-connrefused --silent --fail pt:5000'
+                            }
+                        }
+                    }
+                }
+                stage("Wgt") {
+                    steps {
+                        sh 'docker ps | grep wt && docker stop wt && docker rm wt || :'
+                        script {
+                            wgt.withRun('--net nt --name wt') {
+                                sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
+                                    --retry-connrefused --silent --fail wt:5000'
+                            }
+                        }
                     }
                 }
             }
@@ -25,8 +41,8 @@ pipeline{
         stage("Deploy") {
             steps {
                 echo "======== executing Deploy Stage ========"
-                sh 'docker-compose -f Devops/docker-compose.yml up -d pro'
-                sh 'timeout --preserve-status --foreground 60 docker-compose logs -f pro'
+                sh 'docker-compose -f Devops/docker-compose.yml up -d pro wgt'
+                sh 'timeout --preserve-status --foreground 60 docker-compose logs -f pro wgt'
             }
         }
     }
