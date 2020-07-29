@@ -13,8 +13,9 @@ pipeline{
         stage("Test") {
             steps {
                 echo "======== executing Test Stage ========"
+                sh 'docker ps | grep pt && docker stop pt && docker rm pt || :'
                 script {
-                    flask.withRun('--net nt --name pro') {
+                    flask.withRun('--net nt --name pt') {
                         sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
                             --retry-connrefused --silent --fail pro:5000'
                     }
