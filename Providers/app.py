@@ -158,16 +158,24 @@ def add_truck():
     if request.method == "POST":
         truck_licence = request.form.get("licence")
         provider_id = request.form.get("provider_id", type=int)
-        query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(
-            truck_licence, provider_id)
+        query1 = "SELECT provider_id from  Providers"
+        query2 = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence, provider_id)
         try:
             cur = mysql.connection.cursor()
         except:
             return "Faild connection to db,MYSQL_IS_DOWN"
         else:
-            cur.execute(query)
+            cur.execute(query1)
             mysql.connection.commit()
             res = cur.fetchall()
+            for var in res:   
+                if provider_id == var[0]:
+                    cur.execute(query2)
+                    mysql.connection.commit()
+                    res = cur.fetchall()
+            else:
+                print (jsonify(res))
+                print (res)
             cur.close()
             return jsonify(res)
 
