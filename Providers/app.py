@@ -12,10 +12,11 @@ project_root = os.path.dirname(__file__)
 template_path = os.path.join(project_root, './templates')
 app = Flask(__name__, template_folder=template_path)
 
-app.config['MYSQL_HOST'] = 'db'
+app.config['MYSQL_HOST'] = 'Blue.develeap.com'
 app.config['MYSQL_USER'] = 'provider'
 app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'billdb'
+app.config['MYSQL_PORT'] = 8086
 
 mysql = MySQL(app)
 
@@ -71,9 +72,26 @@ def get_rates():
     return "return render_template('index.html')"
 
 
-@app.route('/truck', methods=['POST'])
+@app.route('/truck/get', methods=['POST'])
 def add_truck():
-    return "return render_template('index.html')"
+    if request.method == "POST":
+        truck_licence = request.form.get("licence",)
+        provider_id = request.form.get("provider_id",type=int)
+        query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence,provider_id)
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "Faild connection to db,MYSQL_IS_DOWN"
+        else:
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+            return jsonify(res)
+@app.route('/truck/add', methods=['GET'])
+def load_setTruck():
+    if request.method == "GET":
+        return  render_template('setTruck.html')
 
 
 @app.route('/truck/{id}', methods=['PUT'])
@@ -97,10 +115,10 @@ def get_health():
     try:
         cur = mysql.connection.cursor()
     except:
-        return "MYSQL_IS_DOWN"
+        return jsonify(cur)
     else:
         # test that the DB is alive by selecting data:
-        query = "SELECT * from Provider;"
+        query = "SELECT * from Providers;"
         cur = mysql.connection.cursor()
         cur.execute(query)
         mysql.connection.commit()
@@ -114,6 +132,5 @@ def get_health():
 #     return jsonify({'tasks': tasks})
 
 
-app.run(host='0.0.0.0', port=5000)
-if __name__ == '__main__':
-    app.run(debug=True)
+app.run(debug=True,host='0.0.0.0', port=5000)
+

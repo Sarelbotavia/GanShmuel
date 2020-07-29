@@ -7,20 +7,29 @@ services:
     #volumes:
     # - /home/Admin/docker/14_gan_shmuel/devops/Devops/init:/docker-entrypoint-initdb.d
     # - db:/var/lib/mysql
-    image: devops2030/gan_shmuel
-    environment: 
-     - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+    image: devops2030/gan_shmuel:latest
+    #environment: 
+    # - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
     ports: 
      - "3306:3306"
   
   pro:
     build:
-      dockerfile: flask.Dockerfile
+      dockerfile: ../Providers/flask.Dockerfile
       context: ../Providers
     container_name: pro
     image: pro
     ports: 
      - "8090:5000"
+
+  wgt:
+    build:
+      dockerfile: ../Providers/flask.Dockerfile
+      context: ../Weight
+    container_name: wgt
+    image: wgt
+    ports: 
+     - "8089:5000"
 
 volumes:
   db:
