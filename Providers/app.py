@@ -55,11 +55,6 @@ def load_form():
     return render_template('index.html')
 
 
-# @app.route('/api/healthy', methods=['GET'])
-# def get_tasks():
-#     return jsonify({'tasks': tasks})
-
-
 @app.route('/provider/{id}', methods=['PUT'])
 def update_provider():
     return "return render_template('index.html')"
@@ -84,10 +79,20 @@ def add_truck():
 def update_truck():
     return "return render_template('index.html')"
 
+# ===========================================================================
+
+
+@app.route('/truck/getbyid', methods=['GET'])
+def load_get_trucks_form():
+    return render_template('truck7.html')
+
 
 @app.route('/truck/<id>?from=t1&to=t2', methods=['GET'])
 def get_truck():
     return "return render_template('index.html')"
+
+
+# ===========================================================================
 
 
 @app.route('/bill/<id>?from=t1&to=t2', methods=['GET'])
