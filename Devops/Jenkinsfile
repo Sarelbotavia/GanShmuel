@@ -58,7 +58,6 @@ pipeline {
       steps {
         echo '======== executing Deploy Stage ========'
         sh 'docker-compose -f Devops/docker-compose.yml up -d pro wgt'
-        sh 'timeout --preserve-status --foreground 60 docker-compose logs -f pro wgt'
       }
     }
 
