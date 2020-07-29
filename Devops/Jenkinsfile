@@ -28,12 +28,13 @@ pipeline{
                 stage("Wgt") {
                     steps {
                         sh 'docker ps | grep wt && docker stop wt && docker rm wt || :'
+                        /*
                         script {
                             wgt.withRun('--net nt --name wt') {
                                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
                                     --retry-connrefused --silent wt:5000'
                             }
-                        }
+                        }*/
                     }
                 }
             }
