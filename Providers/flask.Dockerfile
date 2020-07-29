@@ -4,7 +4,7 @@ RUN pip install --upgrade pip
 COPY alp-sql.sh /alp.sh
 RUN chmod +x /alp.sh
 RUN ./alp.sh
-RUN export FLASK_APP=app.py
+#RUN export FLASK_APP=app.py
 COPY * /
-ENTRYPOINT ["python", "./app.py"]
+CMD ["python", "./app.py"]
 
