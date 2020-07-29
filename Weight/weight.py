@@ -4,10 +4,7 @@ from flask import Flask, jsonify, render_template, request
 from flask_mysqldb import MySQL
 import csv
 import json
-
 from datetime import datetime, date
-#from typing import Optional       # << wtf is this
-
 
 app = Flask(__name__)
 
@@ -187,10 +184,23 @@ def get_unknown():
         return jsonify(res) 
     
 
+# @ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
+# def post_batch_weight():
+#     to=request.args.get('to')
+#     from1=request.args.get('from')
+#     filter1=request.args.get('filter')
+#     try:
+#         cur = mysql.connection.cursor()
+#     except:
+#         return "MYSQL_IS_DOWN"
+#     else:
+#         query = "SELECT id FROM containers WHERE weight=0;"
+#         cur.execute(query)
+#         mysql.connection.commit()
+#         res = cur.fetchall()
+#         cur.close()
+#         return jsonify(res) 
 
-@ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
-def get_weight_from():
-    return "weight?from=t1&to=t2&filter=f"
 
 
 @app.route('/item/<id>', methods=['GET'])
@@ -199,8 +209,7 @@ def get_id(id):
     test_id=id
     to=request.args.get('to')
     from1=request.args.get('from')
-    # --20181218181512--20181221141414
-
+    
     try:
         cur = mysql.connection.cursor()
     except:
@@ -211,9 +220,7 @@ def get_id(id):
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
-
-            query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
-
+            query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -225,7 +232,7 @@ def get_id(id):
 
 
 
-@app.route('/item', methods=['POST']) #allow both GET and POST requests
+@app.route('/item', methods=['GET','POST']) #allow both GET and POST requests
 def get_item_id():
 
     if request.method == 'POST':  #this block is only entered when the form is submitted
@@ -243,7 +250,7 @@ def get_item_id():
             res = cur.fetchall()
             if not res:
 
-                query = ("SELECT trucks_i   d,bruto,id,date FROM sessions WHERE (containers_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+                query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
                 cur.execute(query)
                 mysql.connection.commit()
                 res = cur.fetchall()
@@ -262,8 +269,31 @@ def get_item_id():
 
 
 @ app.route('/session/<id>', methods=['GET'])
-def get_session():
-    return "session/<id>"
+def get_session(id):
+    test_id=id
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        cur.execute("SELECT direction FROM sessions WHERE (id='{}');".format(test_id))
+        mysql.connection.commit()
+        inorout = cur.fetchall()
+        inorout = inorout[0][0]
+
+        if inorout == "out":
+            query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, trucks.weight FROM sessions JOIN trucks ON sessions.trucks_id=trucks.truckid WHERE (sessions.id='{}');".format(test_id)
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+            return jsonify(res)
+        query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(test_id)
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        cur.close()
+        return jsonify(res) 
 
 
 @ app.route('/health', methods=['GET'])
