@@ -6,6 +6,6 @@ echo "pip install mysqlclient"
 sed -i '/^pandas.*$/d' requirements.txt 
 pip install -r requirements.txt
 echo "apk del .build-deps"
-apk del .build-deps
+#apk del .build-deps
 #apk add --no-cache mariadb-client-libs
 #apk add --no-cache mariadb-client
