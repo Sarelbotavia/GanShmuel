@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import os,random,shutil
+import os
+import random
+import shutil
 import pandas as pd
 import requests
 import json
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
-from flask import Flask, jsonify , send_file , render_template , request , flash , redirect , url_for
+from flask import Flask, jsonify, send_file, render_template, request, flash, redirect, url_for
 
 
 # from config import Config
@@ -14,8 +16,8 @@ from flask import Flask, jsonify , send_file , render_template , request , flash
 # connections
 
 # eviroment variables
-LAST_UPLOADED_EXCEL="/tmp/last_excel.xlsx"
-ALLOWED_EXTENSIONS = {'xlsx','xls'}
+LAST_UPLOADED_EXCEL = "/tmp/last_excel.xlsx"
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 project_root = os.path.dirname(__file__)
 template_path = os.path.join(project_root, './templates')
 app = Flask(__name__, template_folder=template_path)
@@ -44,6 +46,7 @@ def get(url):
     except:
         return "cant connect to the api"
 
+
 def mysql_execute_query(query):
     try:
         cur = mysql.connection.cursor()
@@ -62,17 +65,18 @@ def mysql_execute_query(query):
 
 @app.route('/')
 def home():
-    return "Hello, World!"
+    return render_template("main.html")
 
 
 @app.route('/provider/reg', methods=['POST'])
 def get_tasks():
     providerName = request.form.get("p_name")
-    query = "INSERT INTO Provider (name) VALUES ('{}')".format(providerName)
+    query = "INSERT INTO Providers (name) VALUES ('{}')".format(providerName)
+    print(query)
     cur = mysql.connection.cursor()
     cur.execute(query)
     mysql.connection.commit()
-    query = "SELECT * FROM Provider WHERE name=('{}')".format(providerName)
+    query = "SELECT * FROM Providers WHERE name=('{}')".format(providerName)
     cur = mysql.connection.cursor()
     cur.execute(query)
     mysql.connection.commit()
@@ -82,20 +86,26 @@ def get_tasks():
     # INSERT INTO table_name
     #VALUES (value1, value2, value3, ...);
 
+
 @app.route('/provider/add', methods=['GET'])
 def load_form():
     return render_template('index.html')
+
 
 @app.route('/provider/{id}', methods=['PUT'])
 def update_provider():
     return "return render_template('index.html')"
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def get_safe_temp_filename(base_name_to_use):
-    base_name_to_use = "flask_tmp_file_" + str(random.randint(10000000000,99999999999)) + "_" + secure_filename(base_name_to_use)
+    base_name_to_use = "flask_tmp_file_" + \
+        str(random.randint(10000000000, 99999999999)) + \
+        "_" + secure_filename(base_name_to_use)
     return os.path.join("/tmp", base_name_to_use)
 
 
@@ -104,27 +114,27 @@ def upload_rates():
     files_to_delete_when_function_finishes = []
     try:
         f = request.files['file']
-        #checkfile
-        if ( not allowed_file(f.filename)):
+        # checkfile
+        if (not allowed_file(f.filename)):
             return "not an excel file : try again"
 
-        #save excel file to disk
+        # save excel file to disk
         excel_file_temp_path = get_safe_temp_filename(f.filename)
         f.save(excel_file_temp_path)
         files_to_delete_when_function_finishes.append(excel_file_temp_path)
 
-        #convert to csv
+        # convert to csv
         csv_file_temp_path = get_safe_temp_filename("newfile.csv")
-        excel_to_csv=pd.read_excel(excel_file_temp_path)
-        excel_to_csv.to_csv(csv_file_temp_path,index = None, header=True)
+        excel_to_csv = pd.read_excel(excel_file_temp_path)
+        excel_to_csv.to_csv(csv_file_temp_path, index=None, header=True)
         files_to_delete_when_function_finishes.append(csv_file_temp_path)
 
-        #insetr into database
+        # insetr into database
         query = "DELETE FROM Rates "
         mysql_execute_query(query)
 
         query = """LOAD DATA LOCAL INFILE '{}' INTO TABLE Rates FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS """
-        query=query.format(csv_file_temp_path)
+        query = query.format(csv_file_temp_path)
         mysql_execute_query(query)
 
         query = "SELECT * FROM Rates "
@@ -133,23 +143,25 @@ def upload_rates():
         res = cur.fetchall()
         cur.close()
 
-        #save last file
+        # save last file
         if os.path.isfile(LAST_UPLOADED_EXCEL):
             os.remove(LAST_UPLOADED_EXCEL)
-        shutil.copy(excel_file_temp_path,LAST_UPLOADED_EXCEL)
+        shutil.copy(excel_file_temp_path, LAST_UPLOADED_EXCEL)
         return jsonify(res)
 
     except:
         return 'Somthing went wrong, try again :)'
-        
+
     finally:
         for x in files_to_delete_when_function_finishes:
             if os.path.isfile(x):
                 os.remove(x)
-    
+
+
 @app.route('/rates/add', methods=['GET'])
 def load_form_rates():
     return render_template('rates.html')
+
 
 @app.route('/rates', methods=['GET'])
 def get_rates():
@@ -168,18 +180,19 @@ def add_truck():
         else:
             truck_licence = request.form.get("licence")
             provider_id = request.form.get("provider_id", type=int)
-            query ="SELECT truck_id from Trucks"
+            query = "SELECT truck_id from Trucks"
             res = mysql_execute_query(query)
             for var in res:
                 if truck_licence == var[0]:
                     flash("licence is alredy exsits!")
                     return render_template('setTruck.html')
 
-            query ="SELECT provider_id from Providers"
+            query = "SELECT provider_id from Providers"
             res = mysql_execute_query(query)
-            for var in res:   
+            for var in res:
                 if provider_id == var[0]:
-                    query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence, provider_id)
+                    query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(
+                        truck_licence, provider_id)
                     mysql_execute_query(query)
                     break
             else:
@@ -190,7 +203,7 @@ def add_truck():
 
 
 @app.route('/truck/add', methods=['GET'])
-def load_setTruck(): 
+def load_setTruck():
     if request.method == "GET":
         return render_template('setTruck.html')
 
@@ -230,32 +243,32 @@ def get_bill():
         if not request.form["licence"]:
             flash("truck_id is required", "error")
             return render_template('truck_details_for_bill.html')
-        elif not request.form["t1"] or not request.form["t2"] :
+        elif not request.form["t1"] or not request.form["t2"]:
             flash("Please insert time", "info")
             return render_template('truck_details_for_bill.html')
         else:
             truck_Id = request.form.get("licence")
-            query ="SELECT truck_id from Trucks"
+            query = "SELECT truck_id from Trucks"
             res = mysql_execute_query(query)
             for var in res:
                 if truck_Id == var[0]:
-                    query ="SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(truck_Id)
+                    query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(
+                        truck_Id)
                     res = mysql_execute_query(query)
-                    pro_id      = res[0][0]
-                    pro_name    = res[0][1]
+                    pro_id = res[0][0]
+                    pro_name = res[0][1]
                     timing_bill = res[0][2]
                     t1 = request.form.get("t1")
                     t2 = request.form.get("t2")
                     print(res)
                     print(t1)
                     print(t2)
-                    return jsonify(res,t1,t2)
+                    return jsonify(res, t1, t2)
             else:
                 flash("truck id not found,please insert agein", "info")
                 return render_template('truck_details_for_bill.html')
 
     return redirect(url_for("home"))
-    
 
 
 """
@@ -277,11 +290,12 @@ def get_bill():
 }
 """
 
+
 @app.route('/health', methods=['GET'])
 def get_health():
     query = "SELECT 1;"
     res = mysql_execute_query(query)
-    flash(f"{res}","info")
+    flash(f"{res}", "info")
     return redirect(url_for("home"))
 
 
