@@ -4,7 +4,7 @@ from flask import Flask, jsonify, render_template,request
 from flask_mysqldb import MySQL
 import csv
 import json
-import numpy as np
+import numpy as np   # <<< wtf is this
 
 from datetime import datetime, date
 
@@ -55,7 +55,7 @@ def post_weight():
         unit = details['unit']
         force = request.form.get('force') #None=false on=true
         produce = details['produce']
-
+        
 
         if weight == "":
             return "Error: Weight cant be empty"
@@ -113,14 +113,14 @@ def post_weight():
 
 
 
-
+        
         elif direction=="out":
             if olddir=="none" or (force != "on" and olddir=="out"):
                 return "Error: Cant 'out' without an 'in' (no truck to get out, you can force it if its 'out')"
                  
             cur.execute("UPDATE sessions SET neto=%s, direction=%s WHERE id=%s;", (weight, direction, res))
         
-        if direction == 'in':
+        if direction == 'in' and containers != "":
             if force=="on":
                 cur.execute("DELETE FROM containers_has_sessions WHERE sessions_id=%s;",(res+1,))
 
@@ -145,14 +145,16 @@ def post_weight():
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
-            return jsonify(jsoner)
+            jsoner=np.array(jsoner)
+            return jsonify(func(jsoner,"id,trucks_id,bruto"))
         else:
             cur.execute(
                 "SELECT id, trucks_id, bruto,(bruto-neto) as 'Truck weight', neto FROM sessions WHERE id=%s;", (res,))
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
-            return jsonify(jsoner)
+            jsoner=np.array(jsoner)
+            return jsonify(func(jsoner,"id,trucks_id,bruto,Truck_weight,neto"))
 
 
     return render_template('weight.html')
