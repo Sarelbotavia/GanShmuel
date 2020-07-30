@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import os,random,shutil
 import pandas as pd
-from flask import Flask, jsonify,send_file
-from flask import render_template
-from flask import request
 import requests
 import json
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
+from flask import Flask, jsonify , send_file , render_template , request , flash , redirect , url_for
+
 
 # from config import Config
 # from flask_migrate import Migrate
@@ -45,13 +44,24 @@ def get(url):
     except:
         return "cant connect to the api"
 
+def mysql_execute_query(query):
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        flash("Faild connectin,MYSQL_IS_DOWN")
+    else:
+        cur.execute(query)
+        mysql.connection.commit()
+        res = cur.fetchall()
+        cur.close()
+        return res
 # ====================================================================
 
 
 # Routing:
 
 @app.route('/')
-def index():
+def home():
     return "Hello, World!"
 
 
@@ -72,11 +82,9 @@ def get_tasks():
     # INSERT INTO table_name
     #VALUES (value1, value2, value3, ...);
 
-
 @app.route('/provider/add', methods=['GET'])
 def load_form():
     return render_template('index.html')
-
 
 @app.route('/provider/{id}', methods=['PUT'])
 def update_provider():
@@ -90,10 +98,6 @@ def get_safe_temp_filename(base_name_to_use):
     base_name_to_use = "flask_tmp_file_" + str(random.randint(10000000000,99999999999)) + "_" + secure_filename(base_name_to_use)
     return os.path.join("/tmp", base_name_to_use)
 
-def mysql_execute_query(query):
-    cur = mysql.connection.cursor()
-    cur.execute(query)
-    mysql.connection.commit()
 
 @app.route('/rates/reg', methods=['POST'])
 def upload_rates():
@@ -142,7 +146,6 @@ def upload_rates():
         for x in files_to_delete_when_function_finishes:
             if os.path.isfile(x):
                 os.remove(x)
-
     
 @app.route('/rates/add', methods=['GET'])
 def load_form_rates():
@@ -156,32 +159,39 @@ def get_rates():
 @app.route('/truck/get', methods=['POST'])
 def add_truck():
     if request.method == "POST":
-        truck_licence = request.form.get("licence")
-        provider_id = request.form.get("provider_id", type=int)
-        query1 = "SELECT provider_id from  Providers"
-        query2 = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence, provider_id)
-        try:
-            cur = mysql.connection.cursor()
-        except:
-            return "Faild connection to db,MYSQL_IS_DOWN"
+        if not request.form["licence"]:
+            flash("licence is required", "info")
+            return render_template('setTruck.html')
+        elif not request.form["provider_id"]:
+            flash("provider_id is required", "info")
+            return render_template('setTruck.html')
         else:
-            cur.execute(query1)
-            mysql.connection.commit()
-            res = cur.fetchall()
+            truck_licence = request.form.get("licence")
+            provider_id = request.form.get("provider_id", type=int)
+            query ="SELECT truck_id from Trucks"
+            res = mysql_execute_query(query)
+            for var in res:
+                if truck_licence == var[0]:
+                    flash("licence is alredy exsits!")
+                    return render_template('setTruck.html')
+                    break
+
+            query ="SELECT provider_id from Providers"
+            res = mysql_execute_query(query)
             for var in res:   
                 if provider_id == var[0]:
-                    cur.execute(query2)
-                    mysql.connection.commit()
-                    res = cur.fetchall()
+                    query = "INSERT INTO Trucks (truck_id,provider_id) VALUES ('{}','{}')".format(truck_licence, provider_id)
+                    mysql_execute_query(query)
+                    break
             else:
-                print (jsonify(res))
-                print (res)
-            cur.close()
-            return jsonify(res)
+                flash("Provider id not exsits!")
+                return render_template('setTruck.html')
+
+    return redirect(url_for("home"))
 
 
 @app.route('/truck/add', methods=['GET'])
-def load_setTruck():
+def load_setTruck(): 
     if request.method == "GET":
         return render_template('setTruck.html')
 
@@ -209,11 +219,64 @@ def get_truck():
 # ===========================================================================
 
 
-@app.route('/bill/<id>?from=t1&to=t2', methods=['GET'])
+@app.route('/bill/insert', methods=['GET'])
+def load_detalis_for_bill():
+    if request.method == "GET":
+        return render_template('truck_details_for_bill.html')
+
+@app.route('/bill/get', methods=['POST'])
 def get_bill():
-    return "return render_template('index.html')"
+    if request.method == "POST":
+        if not request.form["licence"]:
+            flash("truck_id is required", "error")
+            return render_template('truck_details_for_bill.html')
+        elif not request.form["t1"] or not request.form["t2"] :
+            flash("Please insert time", "info")
+            return render_template('truck_details_for_bill.html')
+        else:
+            truck_Id = request.form.get("licence")
+            query ="SELECT truck_id from Trucks"
+            res = mysql_execute_query(query)
+            for var in res:
+                if truck_Id == var[0]:
+                    query ="SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(truck_Id)
+                    res = mysql_execute_query(query)
+                    pro_id      = res[0][0]
+                    pro_name    = res[0][1]
+                    timing_bill = res[0][2]
+                    t1 = request.form.get("t1")
+                    t2 = request.form.get("t2")
+                    print(res)
+                    print(t1)
+                    print(t2)
+                    break
+            else:
+                flash("truck id not found,please insert agein", "info")
+                return render_template('truck_details_for_bill.html')
+
+    return redirect(url_for("home"))
+    
 
 
+"""
+ 
+  "id": <str>,
+  "name": <str>,
+  "from": <str>,
+  "to": <str>,
+  "truckCount": <int>,
+  "sessionCount": <int>,
+  "products": [
+    { "product":<str>,
+      "count": <str>, // number of sessions
+      "amount": <int>, // total kg
+      "rate": <int>, // agorot
+      "pay": <int> // agorot
+    },...
+  ],
+  "total": <int> // agorot
+}
+"""
 @app.route('/health', methods=['GET'])
 def get_health():
     query = "SELECT * FROM billdb;"
@@ -229,7 +292,9 @@ def get_health():
         mysql.connection.commit()
         res = cur.fetchall()
         cur.close()
-    return jsonify(res)
+        flash("{}", "info").formt(res)
+
+    return redirect(url_for("home"))
 
 
 # @app.route('/api/healthy', methods=['GET'])

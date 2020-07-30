@@ -15,7 +15,8 @@ services:
       context: Providers
     container_name: pro
     volumes:
-      - "./Providers/app.py:/app.py"
+      - "./Providers/app.py:/app/app.py"
+      - "./Providers/templates:/app/templates/"
     image: pro
     ports: 
       - 5000:5000
