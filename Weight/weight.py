@@ -153,8 +153,8 @@ def post_weight():
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
-
-            return jsonify(jsoner,"id, trucks_id, bruto, Truck weight, neto")
+            jsoner=np.array(jsoner)
+            return jsonify(func(jsoner,"id,trucks_id,bruto,Truck_weight,neto"))
 
 
     return render_template('weight.html')
