@@ -328,13 +328,7 @@ def get_item_id():
             cur.close()
             return jsonify(res)
 
-    return '''<form method="POST">
-                  id: <input type="text" name="id"><br>
-                  from: <input type="text" name="from"><br>
-                  to: <input type="text" name="to"><br>
-                  <input type="submit" value="Submit"><br>
-              </form>'''
-
+    return render_template('item.html')
 
 
 @ app.route('/session/<id>', methods=['GET'])
