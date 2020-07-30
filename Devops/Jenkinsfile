@@ -53,6 +53,15 @@ pipeline {
         }
       }
     }
+    stage('Compose') {
+      steps {
+        step ([$class: 'DockerComposeBuilder', \
+        dockerComposeFile: 'Devops/e2e.yml', \
+        option: [$class: 'StartAllServices'], \
+        useCustomDockerComposeFile: true \
+        ])
+      }
+    }
 
     stage('Deploy') {
       steps {
