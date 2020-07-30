@@ -1,0 +1,36 @@
+version: "3"
+
+#devops2030/gan_shmuel:latest
+services:
+  db:
+    container_name: db
+    #volumes:
+    # - /home/Admin/docker/14_gan_shmuel/devops/Devops/init:/docker-entrypoint-initdb.d
+    image: devops2030/gan_shmuel:latest
+    #environment: 
+    # - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+    ports: 
+     - "3306:3306"
+  
+  pro:
+    build:
+      dockerfile: ../Providers/flask.Dockerfile
+      context: ../Providers
+    container_name: pro
+    image: pro
+    ports: 
+     - "8081:5000"
+
+  wgt:
+    build:
+      dockerfile: ../Providers/flask.Dockerfile
+      context: ../Weight
+    container_name: wgt
+    image: wgt
+    ports: 
+     - "8082:5000"
+    command: python ./weight.py
+
+networks:
+  default:
+      name: smt

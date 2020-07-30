@@ -1,38 +1,49 @@
 pipeline {
   agent any
   stages {
+    stage('Preparation') {
+      agent { 
+        docker { 
+          image 'python:3.6.9-alpine' 
+          args '-u root:root'
+          } 
+        }
+      steps {
+        echo '======== executing Preparation Stage ========'
+        sh 'pip install --upgrade pip && pip install pipreqs'
+        sh 'pipreqs --force Providers && pipreqs --force Weight'
+        stash(name: 'results', includes: 'Providers/requirements.txt, Weight/requirements.txt') 
+      }
+    }
     stage('Build') {
       steps {
         echo '======== executing Build Stage ========'
+        unstash 'results'
         script {
-          flask = docker.build ("pro", "-f Providers/flask.Dockerfile Providers/")
+          flask = docker.build ("pro", "-f slim.Dockerfile Providers/")
           wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
         }
-
       }
     }
-
     stage('Test') {
       parallel {
         stage('Pro') {
           steps {
             echo '======== executing Test Stage ========'
-            sh 'docker ps | grep pt && docker stop pt && docker rm pt || :'
+            sh 'docker container ls -a | grep pt && docker stop wt && docker rm wt || :'
             script {
               flask.withRun('--net nt --name pt') {
                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
                 --retry-connrefused --silent --fail pt:5000'
               }
             }
-
           }
         }
-
         stage('Wgt') {
           steps {
-            sh 'docker ps | grep wt && docker stop wt && docker rm wt || :'
+            sh 'docker container ls -a | grep wt && docker stop wt && docker rm wt || :'
             script {
-              wgt.withRun('--net nt --name wt', '--python --./weight.py') {
+              wgt.withRun('--net nt --name wt', 'python ./weight.py') {
                 sh 'curl --retry-delay 6 --connect-timeout 5 --max-time 5 --retry 5\
                 --retry-connrefused --silent wt:5000'
               }
@@ -40,7 +51,6 @@ pipeline {
 
           }
         }
-
       }
     }
 
@@ -48,7 +58,6 @@ pipeline {
       steps {
         echo '======== executing Deploy Stage ========'
         sh 'docker-compose -f Devops/docker-compose.yml up -d pro wgt'
-        sh 'timeout --preserve-status --foreground 60 docker-compose logs -f pro wgt'
       }
     }
 

@@ -39,6 +39,7 @@ CREATE TABLE `trucks` (
 
 DROP TABLE IF EXISTS `containers_has_sessions`;
 DROP TABLE IF EXISTS `sessions`;
+
 CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `direction` enum('in','out','none') DEFAULT NULL,
@@ -54,13 +55,15 @@ CREATE TABLE `sessions` (
 
 
 CREATE TABLE `containers_has_sessions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `containers_id` varchar(45) NOT NULL,
   `sessions_id` int(11) NOT NULL,
-  PRIMARY KEY (`containers_id`,`sessions_id`),
   KEY `fk_containers_has_sessions_sessions1_idx` (`sessions_id`),
   KEY `fk_containers_has_sessions_containers1_idx` (`containers_id`),
   CONSTRAINT `fk_containers_has_sessions_containers1` FOREIGN KEY (`containers_id`) REFERENCES `containers` (`id`),
-  CONSTRAINT `fk_containers_has_sessions_sessions1` FOREIGN KEY (`sessions_id`) REFERENCES `sessions` (`id`)
+  CONSTRAINT `fk_containers_has_sessions_sessions1` FOREIGN KEY (`sessions_id`) REFERENCES `sessions` (`id`),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -101,5 +104,6 @@ INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',2);
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-2369',1);
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845',2);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',3);
-
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',4);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',5);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',6);
