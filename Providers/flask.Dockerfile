@@ -16,4 +16,4 @@ RUN ./alp.sh
 CMD ["python", "./app.py"]
 #RUN pipreqs /app
 #RUN pip install -r /app/requirements.txt
-#RUN pip unistall pipreqs
+#RUN pip unistall pipreqs /
