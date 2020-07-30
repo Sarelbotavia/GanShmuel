@@ -4,6 +4,7 @@ from flask import Flask, jsonify, render_template,request
 from flask_mysqldb import MySQL
 import csv
 import json
+import numpy as np   # <<< wtf is this
 
 from datetime import datetime, date
 
@@ -16,6 +17,17 @@ app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
 now=datetime.now() 
+
+def func(arr,arg):
+    list_1=[]
+    
+    for i in range(arr.shape[0]):
+        j=0
+        for a in arg.split(','):
+            list_1.append((a +':'+str(arr[int(i)][int(j)])))
+            j+=1
+
+    return list_1        
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -43,7 +55,7 @@ def post_weight():
         unit = details['unit']
         force = request.form.get('force') #None=false on=true
         produce = details['produce']
-
+        
 
         if weight == "":
             return "Error: Weight cant be empty"
@@ -77,13 +89,16 @@ def post_weight():
             elif olddir == "in" and direction == "none":
                 return "Error: Cant use 'none' while 'in' is in progress (truck inside doing stuff)"
             
+
             now = datetime.now() 
             time=now.strftime("%Y%m%d%H%M%S")
             if olddir != "in" and (direction == "in" or direction == "none"):
                 cur.execute("INSERT INTO sessions(direction, date, bruto) VALUES (%s, %s, %s)", (direction, time ,weight))
             else:
-                cur.execute("UPDATE sessions SET direction=%s, date=%s, bruto=%s where id=%s", (direction, time ,weight,res+1))
+                cur.execute("UPDATE sessions SET direction=%s, date=%s, bruto=%s where id=%s", (direction, time ,weight,res+1)) #force already checked before so no need to double check
             mysql.connection.commit()
+
+
 
             if truck == "":
                 truck="NA"
@@ -98,39 +113,48 @@ def post_weight():
 
 
 
-
+        
         elif direction=="out":
             if olddir=="none" or (force != "on" and olddir=="out"):
                 return "Error: Cant 'out' without an 'in' (no truck to get out, you can force it if its 'out')"
-            
-        
+                 
             cur.execute("UPDATE sessions SET neto=%s, direction=%s WHERE id=%s;", (weight, direction, res))
+        
+        if direction == 'in' and containers != "":
+            if force=="on":
+                cur.execute("DELETE FROM containers_has_sessions WHERE sessions_id=%s;",(res+1,))
 
-        #for word in containers.split(','):
-        #    print(word)
+            errorcont=0
+            errmsgcont="Action completed, BUT the following containers could not be added because they do not exist in database! Please add the missing containers and override by using force ('in' only!):\n"
+            
+            for word in containers.split(','):
+                try:
+                    cur.execute("INSERT INTO containers_has_sessions(containers_id, sessions_id) VALUES (%s, %s)", (word, res+1))
+                except:
+                    errorcont=1
+                    errmsgcont+=word+"\n"
+            mysql.connection.commit()
         
-        
-        
-        
-        
-        mysql.connection.commit()
-        
+            if errorcont==1:
+                cur.close()
+                return errmsgcont
+
 
         if direction != "out":
             cur.execute("SELECT id, trucks_id, bruto FROM sessions WHERE id=%s;",(res+1,))
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
-            return jsonify(jsoner)
+            jsoner=np.array(jsoner)
+            return jsonify(func(jsoner,"id,trucks_id,bruto"))
         else:
             cur.execute(
                 "SELECT id, trucks_id, bruto,(bruto-neto) as 'Truck weight', neto FROM sessions WHERE id=%s;", (res,))
             mysql.connection.commit()
             jsoner = cur.fetchall()
             cur.close()
-            return jsonify(jsoner)
-
-        #whats left is the motherlucking container part 
+            jsoner=np.array(jsoner)
+            return jsonify(func(jsoner,"id,trucks_id,bruto,Truck_weight,neto"))
 
 
     return render_template('weight.html')
@@ -167,12 +191,21 @@ def post_batch_weight():
             mysql.connection.commit()
             cur.close()
 
-        elif listfile.endswith('.json'):        # need to fix the part of pulling a list from
-            with open('in/' + listfile) as f:   # JSON file, right now it prints "u'" before everything
-                data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
-                for line in data: 
-                    print(line.values()[0])     #tommorow finish this part and this POST command is ready
-                return "this part doesn't work, JSON files SUCK"
+        elif listfile.endswith('.json'):        # key[0]=unit
+            with open('in/' + listfile) as f:   # key[1]=id
+                data = json.load(f)             # key[2]=weight
+
+            cur = mysql.connection.cursor()
+            for line in data:
+                try: 
+                    cur.execute(
+                        "INSERT INTO containers(id, weight, unit) VALUES (%s, %s, %s)", (line.values()[1], line.values()[2], line.values()[0]))
+                except:
+                    error = 1
+                    errmsg += str(line.values()[1])+", "+str(line.values()[2])+", "+line.values()[0]+"\n"
+
+            mysql.connection.commit()
+            cur.close()
 
         else:
             return "Unsupported file, CSV or JSON files only"
@@ -195,11 +228,12 @@ def get_unknown():
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
-        cur.close()
-        return jsonify(res) 
+        m=np.array(res)
+        return jsonify(func(m,'id')) 
     
 
-@ app.route('/getweight?from=t1&to=t2&filter=f', methods=['GET'])
+@ app.route('/getweight', methods=['GET'])
+# /getweight?from=t1&to=t2&filter=f
 def get_weight():
     
     to=request.args.get('to')
@@ -215,19 +249,29 @@ def get_weight():
     if not filter1:
         filter1="in,out,none"
     
-    for direction in filter1.split(','):
-        try:
-            cur = mysql.connection.cursor()
-        except:
-            return "MYSQL_IS_DOWN"
-        else:
-            query = ("SELECT sessions.id, sessions.direction, sessions.bruto, sessions.neto, sessions.products_id, containers_has_sessions.id FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (sessions.direction='{}') AND (date BETWEEN '{}' AND '{}');".format(direction,from1,to))
-            cur.execute(query)
+    finalres=()
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        for direction in filter1.split(','):
+            
+            session = ("SELECT sessions.id FROM sessions WHERE (sessions.direction='{}');".format(direction))
+            cur.execute(session)
             mysql.connection.commit()
-            res = cur.fetchall()
-            cur.close()
-            return jsonify(res) 
-
+            session = cur.fetchall()
+            
+            for s in session:
+                res=()
+                query = ("SELECT Distinct sessions.id, sessions.direction, sessions.bruto, sessions.neto, sessions.products_id, GROUP_CONCAT(containers_has_sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (sessions.direction='{}') AND (sessions.id='{}') AND (date BETWEEN '{}' AND '{}');".format(direction,s[0],from1,to))
+                cur.execute(query)
+                mysql.connection.commit()
+                res += cur.fetchall()
+                finalres += (res[0],)
+       
+    cur.close()
+    return jsonify(finalres) 
 
 
 @app.route('/item/<id>', methods=['GET'])
@@ -248,22 +292,25 @@ def get_id(id):
     except:
         return "MYSQL_IS_DOWN"
     else:
-        query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+        query = ("SELECT DISTINCT trucks_id,bruto,GROUP_CONCAT(id) FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
 
-            query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query =  ("SELECT DISTINCT containers_has_sessions.containers_id, sessions.bruto, GROUP_CONCAT(sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
+            cur.close()
+            m=np.array(res)
+            return jsonify(func(m,'containers id,bruto,sessions'))
             if not res:
                 return "not a valid data"
-                
-        print(res)        
+                       
         cur.close()
-        return jsonify(res)
+        m=np.array(res)
+        return jsonify(func(m,'session id,trucks id,bruto,sessions')) 
 
 
 
@@ -272,7 +319,7 @@ def get_id(id):
 def get_item_id():
     time=now.strftime("%Y%m")
     if request.method == 'POST':  #this block is only entered when the form is submitted
-        id=request.form.get('id')
+        test_id=request.form.get('id')
         from1=request.form['from']
         if not from1:
             from1=time + '01000000'       
@@ -284,28 +331,59 @@ def get_item_id():
         except:
             return "MYSQL_IS_DOWN"
         else:
-            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+            query = (" SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT trucks.weight), GROUP_CONCAT(sessions.id) FROM sessions JOIN trucks ON trucks.truckid=sessions.trucks_id WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
-            res = cur.fetchall()
-            if not res:
-                query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            res = cur.fetchall()            
+            if res[0][0]==None:
+                print("haymon limon!!")
+                query = ("SELECT DISTINCT containers_has_sessions.containers_id, GROUP_CONCAT(DISTINCT (sessions.bruto-sessions.neto)), GROUP_CONCAT(sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
                 cur.execute(query)
                 mysql.connection.commit()
                 res = cur.fetchall()
-                if not res:
+                cur.close()
+                m=np.array(res)
+                if res[0][0]==None:
                     return "not a valid data"
+                return jsonify(func(m,'containers id,tara,sessions'))
             cur.close()
-            return jsonify(res)
+            m=np.array(res)
+            return jsonify(func(m,'trucks id,tara,sessions'))                   
+            # return jsonify(res)
 
-    return '''<form method="POST">
-                  id: <input type="text" name="id"><br>
-                  from: <input type="text" name="from"><br>
-                  to: <input type="text" name="to"><br>
-                  <input type="submit" value="Submit"><br>
-              </form>'''
+    return render_template('item.html')
 
+@ app.route('/session', methods=['GET','POST'])
+def get_session_UI():
+    if request.method == 'POST': 
+        test_id=request.form.get('id')
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "MYSQL_IS_DOWN"
+        else:
+            cur.execute("SELECT direction FROM sessions WHERE (id='{}');".format(test_id))
+            mysql.connection.commit()
+            inorout = cur.fetchall()
+            inorout = inorout[0][0]
 
+            if inorout == "out":
+                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, trucks.weight FROM sessions JOIN trucks ON sessions.trucks_id=trucks.truckid WHERE (sessions.id='{}');".format(test_id)
+                cur.execute(query)
+                mysql.connection.commit()
+                res = cur.fetchall()
+                cur.close()
+                m=np.array(res)
+                return jsonify(func(m,'id,trucks id,bruto,neto,truck weight')) 
+            query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(test_id)
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+
+            m=np.array(res)
+            return jsonify(func(m,'id,trucks id,bruto'))
+    return render_template('sessions.html')      
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session(id):
@@ -326,13 +404,16 @@ def get_session(id):
             mysql.connection.commit()
             res = cur.fetchall()
             cur.close()
-            return jsonify(res)
+            m=np.array(res)
+            return jsonify(func(m,'id,trucks id,bruto,neto,truck weight')) 
         query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(test_id)
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         cur.close()
-        return jsonify(res) 
+
+        m=np.array(res)
+        return jsonify(func(m,'id,trucks id,bruto')) 
 
 
 @ app.route('/health', methods=['GET'])
@@ -345,11 +426,8 @@ def get_health():
         cur.close()
         return "RUNNING"
 
-# @app.route('/api/healthy', methods=['GET'])
-# def get_tasks():
-#     return jsonify({'tasks': tasks})
 
-app.run(debug=True,host='0.0.0.0', port=5000)
+#app.run(debug=True,host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     app.run()
