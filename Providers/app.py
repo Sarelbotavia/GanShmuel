@@ -174,7 +174,6 @@ def add_truck():
                 if truck_licence == var[0]:
                     flash("licence is alredy exsits!")
                     return render_template('setTruck.html')
-                    break
 
             query ="SELECT provider_id from Providers"
             res = mysql_execute_query(query)
@@ -224,6 +223,7 @@ def load_detalis_for_bill():
     if request.method == "GET":
         return render_template('truck_details_for_bill.html')
 
+
 @app.route('/bill/get', methods=['POST'])
 def get_bill():
     if request.method == "POST":
@@ -249,7 +249,7 @@ def get_bill():
                     print(res)
                     print(t1)
                     print(t2)
-                    break
+                    return jsonify(res,t1,t2)
             else:
                 flash("truck id not found,please insert agein", "info")
                 return render_template('truck_details_for_bill.html')
@@ -259,7 +259,6 @@ def get_bill():
 
 
 """
- 
   "id": <str>,
   "name": <str>,
   "from": <str>,
@@ -277,23 +276,12 @@ def get_bill():
   "total": <int> // agorot
 }
 """
+
 @app.route('/health', methods=['GET'])
 def get_health():
-    query = "SELECT * FROM billdb;"
-    try:
-        cur = mysql.connection.cursor()
-    except:
-        return jsonify(cur)
-    else:
-        # test that the DB is alive by selecting data:
-        query = "SELECT * from Providers;"
-        cur = mysql.connection.cursor()
-        cur.execute(query)
-        mysql.connection.commit()
-        res = cur.fetchall()
-        cur.close()
-        flash("{}", "info").formt(res)
-
+    query = "SELECT 1;"
+    res = mysql_execute_query(query)
+    flash(f"{res}","info")
     return redirect(url_for("home"))
 
 
