@@ -77,13 +77,16 @@ def post_weight():
             elif olddir == "in" and direction == "none":
                 return "Error: Cant use 'none' while 'in' is in progress (truck inside doing stuff)"
             
+
             now = datetime.now() 
             time=now.strftime("%Y%m%d%H%M%S")
             if olddir != "in" and (direction == "in" or direction == "none"):
                 cur.execute("INSERT INTO sessions(direction, date, bruto) VALUES (%s, %s, %s)", (direction, time ,weight))
             else:
-                cur.execute("UPDATE sessions SET direction=%s, date=%s, bruto=%s where id=%s", (direction, time ,weight,res+1))
+                cur.execute("UPDATE sessions SET direction=%s, date=%s, bruto=%s where id=%s", (direction, time ,weight,res+1)) #force already checked before so no need to double check
             mysql.connection.commit()
+
+
 
             if truck == "":
                 truck="NA"
@@ -102,19 +105,28 @@ def post_weight():
         elif direction=="out":
             if olddir=="none" or (force != "on" and olddir=="out"):
                 return "Error: Cant 'out' without an 'in' (no truck to get out, you can force it if its 'out')"
-            
-        
+                 
             cur.execute("UPDATE sessions SET neto=%s, direction=%s WHERE id=%s;", (weight, direction, res))
+        
+        if direction == 'in':
+            if force=="on":
+                cur.execute("DELETE FROM containers_has_sessions WHERE sessions_id=%s;",(res+1,))
 
-        #for word in containers.split(','):
-        #    print(word)
+            errorcont=0
+            errmsgcont="Action completed, BUT the following containers could not be added because they do not exist in database! Please add the missing containers and override by using force ('in' only!):\n"
+            
+            for word in containers.split(','):
+                try:
+                    cur.execute("INSERT INTO containers_has_sessions(containers_id, sessions_id) VALUES (%s, %s)", (word, res+1))
+                except:
+                    errorcont=1
+                    errmsgcont+=word+"\n"
+            mysql.connection.commit()
         
-        
-        
-        
-        
-        mysql.connection.commit()
-        
+            if errorcont==1:
+                cur.close()
+                return errmsgcont
+
 
         if direction != "out":
             cur.execute("SELECT id, trucks_id, bruto FROM sessions WHERE id=%s;",(res+1,))
@@ -129,8 +141,6 @@ def post_weight():
             jsoner = cur.fetchall()
             cur.close()
             return jsonify(jsoner)
-
-        #whats left is the motherlucking container part 
 
 
     return render_template('weight.html')
@@ -167,12 +177,21 @@ def post_batch_weight():
             mysql.connection.commit()
             cur.close()
 
-        elif listfile.endswith('.json'):        # need to fix the part of pulling a list from
-            with open('in/' + listfile) as f:   # JSON file, right now it prints "u'" before everything
-                data = json.load(f)             # and it doesnt put it in a python list, instand it puts it like shit string
-                for line in data: 
-                    print(line.values()[0])     #tommorow finish this part and this POST command is ready
-                return "this part doesn't work, JSON files SUCK"
+        elif listfile.endswith('.json'):        # key[0]=unit
+            with open('in/' + listfile) as f:   # key[1]=id
+                data = json.load(f)             # key[2]=weight
+
+            cur = mysql.connection.cursor()
+            for line in data:
+                try: 
+                    cur.execute(
+                        "INSERT INTO containers(id, weight, unit) VALUES (%s, %s, %s)", (line.values()[1], line.values()[2], line.values()[0]))
+                except:
+                    error = 1
+                    errmsg += str(line.values()[1])+", "+str(line.values()[2])+", "+line.values()[0]+"\n"
+
+            mysql.connection.commit()
+            cur.close()
 
         else:
             return "Unsupported file, CSV or JSON files only"
