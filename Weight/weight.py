@@ -351,6 +351,37 @@ def get_item_id():
 
     return render_template('item.html')
 
+@ app.route('/session', methods=['GET','POST'])
+def get_session_UI():
+    if request.method == 'POST': 
+        test_id=request.form.get('id')
+        try:
+            cur = mysql.connection.cursor()
+        except:
+            return "MYSQL_IS_DOWN"
+        else:
+            cur.execute("SELECT direction FROM sessions WHERE (id='{}');".format(test_id))
+            mysql.connection.commit()
+            inorout = cur.fetchall()
+            inorout = inorout[0][0]
+
+            if inorout == "out":
+                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, trucks.weight FROM sessions JOIN trucks ON sessions.trucks_id=trucks.truckid WHERE (sessions.id='{}');".format(test_id)
+                cur.execute(query)
+                mysql.connection.commit()
+                res = cur.fetchall()
+                cur.close()
+                m=np.array(res)
+                return jsonify(func(m,'id,trucks id,bruto,neto,truck weight')) 
+            query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(test_id)
+            cur.execute(query)
+            mysql.connection.commit()
+            res = cur.fetchall()
+            cur.close()
+
+            m=np.array(res)
+            return jsonify(func(m,'id,trucks id,bruto'))
+    return render_template('sessions.html')      
 
 @ app.route('/session/<id>', methods=['GET'])
 def get_session(id):
