@@ -103,5 +103,6 @@ INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',2);
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-2369',1);
 INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-7845',2);
-INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',3);
-
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',4);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-6523',5);
+INSERT INTO containers_has_sessions (containers_id, sessions_id) VALUES ('K-1234',6);

@@ -186,7 +186,8 @@ def get_unknown():
         return jsonify(res) 
     
 
-@ app.route('/getweight?from=t1&to=t2&filter=f', methods=['GET'])
+@ app.route('/getweight', methods=['GET'])
+# /getweight?from=t1&to=t2&filter=f
 def get_weight():
     
     to=request.args.get('to')
@@ -202,19 +203,29 @@ def get_weight():
     if not filter1:
         filter1="in,out,none"
     
-    for direction in filter1.split(','):
-        try:
-            cur = mysql.connection.cursor()
-        except:
-            return "MYSQL_IS_DOWN"
-        else:
-            query = ("SELECT sessions.id, sessions.direction, sessions.bruto, sessions.neto, sessions.products_id, containers_has_sessions.id FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (sessions.direction='{}') AND (date BETWEEN '{}' AND '{}');".format(direction,from1,to))
-            cur.execute(query)
+    finalres=()
+    try:
+        cur = mysql.connection.cursor()
+    except:
+        return "MYSQL_IS_DOWN"
+    else:
+        for direction in filter1.split(','):
+            
+            session = ("SELECT sessions.id FROM sessions WHERE (sessions.direction='{}');".format(direction))
+            cur.execute(session)
             mysql.connection.commit()
-            res = cur.fetchall()
-            cur.close()
-            return jsonify(res) 
-
+            session = cur.fetchall()
+            
+            for s in session:
+                res=()
+                query = ("SELECT Distinct sessions.id, sessions.direction, sessions.bruto, sessions.neto, sessions.products_id, GROUP_CONCAT(containers_has_sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (sessions.direction='{}') AND (sessions.id='{}') AND (date BETWEEN '{}' AND '{}');".format(direction,s[0],from1,to))
+                cur.execute(query)
+                mysql.connection.commit()
+                res += cur.fetchall()
+                finalres += (res[0],)
+       
+    cur.close()
+    return jsonify(finalres) 
 
 
 @app.route('/item/<id>', methods=['GET'])
