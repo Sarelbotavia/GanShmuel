@@ -70,6 +70,7 @@ INSERT INTO containers (id,weight,unit) VALUES ('K-6523',741,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-2369',120,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7845',999,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-1234',123,'kg');
+INSERT INTO containers (id,weight,unit) VALUES ('K-1334',0,'kg');
 
 
 INSERT INTO products (product_name,rate,scope) VALUES ('Blood',122,'ALL');

@@ -4,6 +4,7 @@ from flask import Flask, jsonify, render_template,request
 from flask_mysqldb import MySQL
 import csv
 import json
+import numpy as np
 
 from datetime import datetime, date
 
@@ -16,6 +17,17 @@ app.config['MYSQL_DB'] = 'weight_db'
 
 mysql = MySQL(app)
 now=datetime.now() 
+
+def func(arr,arg):
+    list_1=[]
+    
+    for i in range(arr.shape[0]):
+        j=0
+        for a in arg.split(','):
+            list_1.append((a +':'+str(arr[int(i)][int(j)])))
+            j+=1
+
+    return list_1        
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -182,8 +194,8 @@ def get_unknown():
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
-        cur.close()
-        return jsonify(res) 
+        m=np.array(res)
+        return jsonify(func(m,'id')) 
     
 
 # @ app.route('/weight?from=t1&to=t2&filter=f', methods=['GET'])
@@ -223,22 +235,25 @@ def get_id(id):
     except:
         return "MYSQL_IS_DOWN"
     else:
-        query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+        query = ("SELECT DISTINCT trucks_id,bruto,GROUP_CONCAT(id) FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         if not res:
 
-            query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query =  ("SELECT DISTINCT containers_has_sessions.containers_id, sessions.bruto, GROUP_CONCAT(sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
+            cur.close()
+            m=np.array(res)
+            return jsonify(func(m,'containers id,bruto,sessions'))
             if not res:
                 return "not a valid data"
-                
-        print(res)        
+                       
         cur.close()
-        return jsonify(res)
+        m=np.array(res)
+        return jsonify(func(m,'session id,trucks id,bruto,sessions')) 
 
 
 
@@ -247,7 +262,7 @@ def get_id(id):
 def get_item_id():
     time=now.strftime("%Y%m")
     if request.method == 'POST':  #this block is only entered when the form is submitted
-        id=request.form.get('id')
+        test_id=request.form.get('id')
         from1=request.form['from']
         if not from1:
             from1=time + '01000000'       
@@ -259,19 +274,25 @@ def get_item_id():
         except:
             return "MYSQL_IS_DOWN"
         else:
-            query = ("SELECT trucks_id,bruto,id,date FROM sessions WHERE (trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(id,from1,to))
+            query = (" SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT trucks.weight), GROUP_CONCAT(sessions.id) FROM sessions JOIN trucks ON trucks.truckid=sessions.trucks_id WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
             cur.execute(query)
             mysql.connection.commit()
-            res = cur.fetchall()
-            if not res:
-                query = ("SELECT sessions.id, containers_has_sessions.containers_id, sessions.date, sessions.bruto FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            res = cur.fetchall()            
+            if res[0][0]==None:
+                print("haymon limon!!")
+                query = ("SELECT DISTINCT containers_has_sessions.containers_id, GROUP_CONCAT(DISTINCT (sessions.bruto-sessions.neto)), GROUP_CONCAT(sessions.id) FROM containers_has_sessions JOIN sessions ON containers_has_sessions.sessions_id=sessions.id WHERE (containers_has_sessions.containers_id='{}') AND (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
                 cur.execute(query)
                 mysql.connection.commit()
                 res = cur.fetchall()
-                if not res:
+                cur.close()
+                m=np.array(res)
+                if res[0][0]==None:
                     return "not a valid data"
+                return jsonify(func(m,'containers id,tara,sessions'))
             cur.close()
-            return jsonify(res)
+            m=np.array(res)
+            return jsonify(func(m,'trucks id,tara,sessions'))                   
+            # return jsonify(res)
 
     return '''<form method="POST">
                   id: <input type="text" name="id"><br>
@@ -301,13 +322,16 @@ def get_session(id):
             mysql.connection.commit()
             res = cur.fetchall()
             cur.close()
-            return jsonify(res)
+            m=np.array(res)
+            return jsonify(func(m,'id,trucks id,bruto,neto,truck weight')) 
         query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(test_id)
         cur.execute(query)
         mysql.connection.commit()
         res = cur.fetchall()
         cur.close()
-        return jsonify(res) 
+
+        m=np.array(res)
+        return jsonify(func(m,'id,trucks id,bruto')) 
 
 
 @ app.route('/health', methods=['GET'])
