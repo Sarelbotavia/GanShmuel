@@ -19,8 +19,7 @@ pipeline {
       steps {
         echo '======== executing Build Stage ========'
         echo CHANGE_URL 
-        echo CHANGE_AUTHOR 
-        echo CHANGE_AUTHOR_DISPLAY_NAME 
+        echo CHANGE_AUTHOR  
         echo CHANGE_TARGET 
         echo CHANGE_BRANCH 
         echo CHANGE_FORK 
