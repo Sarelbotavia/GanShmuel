@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  environment {
+    CAUSE = "${currentBuild.getBuildCauses()[0].shortDescription}"
+  }
   stages {
     stage('Preparation') {
       agent { 
@@ -18,6 +21,7 @@ pipeline {
     stage('Build') {
       steps {
         echo '======== executing Build Stage ========'
+        echo "Build caused by ${env.CAUSE}"
         echo CHANGE_URL 
         echo CHANGE_AUTHOR  
         echo CHANGE_TARGET 
