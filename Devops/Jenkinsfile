@@ -1,6 +1,19 @@
 pipeline {
   agent any
+  environment {
+    CAUSE = "${currentBuild.getBuildCauses()[0].shortDescription}"
+  }
   stages {
+    stage('git'){
+      steps{
+        echo "Build caused by ${env.CAUSE}"
+        echo CHANGE_URL 
+        echo CHANGE_AUTHOR  
+        echo CHANGE_TARGET 
+        echo CHANGE_BRANCH 
+        echo CHANGE_FORK
+      }
+    }
     stage('Preparation') {
       agent { 
         docker { 
@@ -17,11 +30,11 @@ pipeline {
     }
     stage('Build') {
       steps {
-        echo '======== executing Build Stage ========'
+        echo '======== executing Build Stage ========' 
         unstash 'results'
         script {
           flask = docker.build ("pro", "-f slim.Dockerfile Providers/")
-          wgt = docker.build ("wgt", "-f Providers/flask.Dockerfile Weight/")
+          wgt = docker.build ("wgt", "-f slim.Dockerfile Weight/")
         }
       }
     }
@@ -51,6 +64,15 @@ pipeline {
 
           }
         }
+      }
+    }
+    stage('Compose') {
+      steps {
+        step ([$class: 'DockerComposeBuilder', \
+        dockerComposeFile: 'Devops/e2e.yml', \
+        option: [$class: 'StartAllServices'], \
+        useCustomDockerComposeFile: true \
+        ])
       }
     }
 
