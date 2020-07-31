@@ -53,7 +53,22 @@ scm = {
     "required": [ "userId", "id", "title", "completed" ]
     }
 
-r = get(EXAMPLE)
+health = {
+    "type" : "array",
+    "items" : [{
+        "type" : "array",
+        "items" : [{
+            "type" : "number"
+        }, {
+            "type" : "string"
+        }, {
+            "type" : "string"
+        }]
+    }]
+}
+
+
+r = get(blue)
 #validate it
 isValid = validateJson(get_body,scm)
 #print('Output of GET request:\n%s' % get_body.decode('utf8'))
@@ -65,73 +80,12 @@ else:
 validate(instance=get_body, schema=scm)
 
 #validate it
-isValid = validateJson(r,scm)
+isValid = validateJson(r,health)
 print (r)
 if isValid:
     print("Given JSON data is Valid, moving to next test")
 else:
     print("Given JSON data is InValid")
 
-validate(instance=r, schema=scm)
+validate(instance=r, schema=health)
 
-
-# EXAMPLE ---->> with urllib.request.urlopen("---my url---") as url:
-# testSchema = json.loads(url.read().decode())
-
-
-
-# with urllib.request.urlopen("http://blue.develeap:8090/health") as url:
-#     jsonData = json.loads(url.read().decode())
-# Describe what kind of json you expect.
-# print(jsonData)
-# healthSchema = [
-#     "type": "object",
-#     "properties":   
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ],
-#     [
-#     "type":"number",
-#     "type":"string",
-#     "type":"string"
-#     ]
-# ]
-
-# # validate it
-# isValid = validateJson(jsonData,healthSchema)
-# if isValid:
-#     print("Given JSON data is Valid, moving to next test")
-# else:
-#     print("Given JSON data is InValid")
