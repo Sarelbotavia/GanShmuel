@@ -60,22 +60,6 @@ def mysql_execute_query(query):
         cur.close()
         return res
 
-def globalFunc(truck_Id):
-    if not request.form["licence"]:
-        flash("truck_id is required", "error")
-        return render_template('truck_details.html')
-    elif not request.form["t1"] or not request.form["t2"] :
-        flash("Please insert time", "info")
-        return render_template('truck_details.html')
-    else:
-        query ="SELECT '{}' from Trucks".format(truck_Id)
-        res = mysql_execute_query(query)
-        for var in res:
-            if truck_Id == var[0]:
-                return True
-        else:
-            flash("truck id not found,please insert agein", "info")
-            return render_template('truck_details.html')
 # ====================================================================
 
 
@@ -84,7 +68,6 @@ def globalFunc(truck_Id):
 @app.route('/')
 def home():
     return render_template("main.html")
-
 
 @app.route('/provider/reg', methods=['POST'])
 def get_tasks():
@@ -101,8 +84,6 @@ def get_tasks():
     query = "SELECT * FROM Provider WHERE name=('{}')".format(providerName)
     res = mysql_execute_query(query)
     return jsonify(res)
-
-
 
 @app.route('/provider/add', methods=['GET'])
 def load_form():
@@ -247,19 +228,18 @@ def load_get_trucks_form():
         res = mysql_execute_query(query)
         for var in res:
             if id == var[0]:
-                par = {}
-                if globalFunc(id) == True:    
-                    fro = request.form.get("t1")
-                    to = request.form.get("t2")
-                    par = {"id":f'{id}',"from":f'{fro}',"to":f'{to}'}
-                    try:
-                        response = requests.post("http://blue.develeap.com:8089/item", data = par)
-                        return jsonify(response.text)
+                par = {} 
+                fro = request.form.get("t1")
+                to = request.form.get("t2")
+                par = {"id":f'{id}',"from":f'{fro}',"to":f'{to}'}
+                try:
+                    response = requests.post("http://blue.develeap.com:8089/item", data = par)
+                    return jsonify(response.text)
 
-                    except HTTPError as http_err:
-                        print(f'HTTP error occurred: {http_err}')
-                    except Exception as err:
-                        print(f'Other error occurred: {err}')
+                except HTTPError as http_err:
+                    print(f'HTTP error occurred: {http_err}')
+                except Exception as err:
+                    print(f'Other error occurred: {err}')
                 break
 
         else:
@@ -273,42 +253,17 @@ def load_detalis_for_bill():
 
 @app.route('/bill/getbyid', methods=['POST'])
 def get_bill():
-    if request.method == "POST":
-        if not request.form["licence"]:
-            flash("truck_id is required", "error")
-            return render_template('truck_details.html')
-        elif not request.form["t1"] or not request.form["t2"]:
-            flash("Please insert time", "info")
-            return render_template('truck_details.html')
-        else:
-            truck_Id = request.form.get("licence")
-            query = "SELECT truck_id from Trucks"
-            res = mysql_execute_query(query)
-            for var in res:
-                if truck_Id == var[0]:
-                    query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(
-                        truck_Id)
-                    res = mysql_execute_query(query)
-                    pro_id = res[0][0]
-                    pro_name = res[0][1]
-                    timing_bill = res[0][2]
-                    t1 = request.form.get("t1")
-                    t2 = request.form.get("t2")
-                    print(res)
-                    print(t1)
-                    print(t2)
-                    return jsonify(res, t1, t2)
-            else:
-                flash("truck id not found,please insert agein", "info")
-                return render_template('truck_details')
-
+    fro = request.form.get("t1")
+    to = request.form.get("t2")
+    res1 = load_get_trucks_form()
+    query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(truck_Id)
+    res2 = mysql_execute_query(query)
+    pro_id = res2[0][0]
+    pro_name = res2[0][1]
+    timing_bill = res2[0][2]
+    print(fro.to,res1,pro_id,pro_name,timing_bill)
     return redirect(url_for("home"))
 
-"""
-    pro_id      = res2[0][0]
-    pro_name    = res2[0][1]
-    timing_bill = res2[0][2]
-"""
 
 """
   "provider id": <str>,
