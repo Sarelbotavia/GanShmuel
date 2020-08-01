@@ -17,7 +17,6 @@ app.config['MYSQL_USER'] = 'Weight'
 app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
 app.config['MYSQL_PORT'] = 8086
-app.config['MYSQL_PORT'] = 3036
 
 mysql = MySQL(app)
 now = datetime.now()
