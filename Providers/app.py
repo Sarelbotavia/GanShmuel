@@ -63,10 +63,10 @@ def mysql_execute_query(query):
 def globalFunc(truck_Id):
     if not request.form["licence"]:
         flash("truck_id is required", "error")
-        return render_template('truck_details_for_bill.html')
+        return render_template('truck_details.html')
     elif not request.form["t1"] or not request.form["t2"] :
         flash("Please insert time", "info")
-        return render_template('truck_details_for_bill.html')
+        return render_template('truck_details.html')
     else:
         query ="SELECT '{}' from Trucks".format(truck_Id)
         res = mysql_execute_query(query)
@@ -75,7 +75,7 @@ def globalFunc(truck_Id):
                 return True
         else:
             flash("truck id not found,please insert agein", "info")
-            return render_template('truck_details_for_bill.html')
+            return render_template('truck_details.html')
 # ====================================================================
 
 
@@ -235,35 +235,37 @@ def load_detalis_for_truck():
 
 @app.route('/truck/getbyid', methods=['POST','GET'])
 def load_get_trucks_form():
-    # url = "http://blue.develeap.com:8090/provider/reg"
-    # response = requests.post(url, data={"p_name":"sarel"})
-    # print(response)
-    # todos = json.loads(response.text)
-    # print (todos)
-    # return jsonify(todos)
-    par = {}
-    id = request.form.get("licence")
-    if globalFunc(id) == True:    
-        fro = request.form.get("t1")
-        to = request.form.get("t2")
-        for var in ["id","fro","to"]:
-            par[var]=eval(var)
-            #res_dic= res.json()
-            #return jsonify(res_dic['form'])
-        par={"id":77777,"from":20100000000000,"to":20110000000000}
-        try:
-            response = requests.post("http://blue.develeap.com:8089/item", data = par)
-            print(response)
-            todos = json.loads(response.text)
-            print (todos)
-            print("---------------4-----------------")
-            return jsonify(todos)
+    if not request.form["licence"]:
+        flash("truck_id is required", "error")
+        return render_template('truck_details.html')
+    elif not request.form["t1"] or not request.form["t2"] :
+        flash("Please insert time", "info")
+        return render_template('truck_details.html')
+    else:
+        id = request.form.get("licence")
+        query ="SELECT '{}' from Trucks".format(id)
+        res = mysql_execute_query(query)
+        for var in res:
+            if id == var[0]:
+                par = {}
+                if globalFunc(id) == True:    
+                    fro = request.form.get("t1")
+                    to = request.form.get("t2")
+                    par = {"id":f'{id}',"from":f'{fro}',"to":f'{to}'}
+                    try:
+                        response = requests.post("http://blue.develeap.com:8089/item", data = par)
+                        return jsonify(response.text)
 
-        except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            print(f'Other error occurred: {err}')
+                    except HTTPError as http_err:
+                        print(f'HTTP error occurred: {http_err}')
+                    except Exception as err:
+                        print(f'Other error occurred: {err}')
+                break
 
+        else:
+            flash("truck id not found,please insert agein", "info")
+            return render_template('truck_details.html')
+    
 @app.route('/bill/insert', methods=['GET'])
 def load_detalis_for_bill():
     if request.method == "GET":
@@ -271,14 +273,13 @@ def load_detalis_for_bill():
 
 @app.route('/bill/getbyid', methods=['POST'])
 def get_bill():
-<<<<<<< HEAD
     if request.method == "POST":
         if not request.form["licence"]:
             flash("truck_id is required", "error")
-            return render_template('truck_details_for_bill.html')
+            return render_template('truck_details.html')
         elif not request.form["t1"] or not request.form["t2"]:
             flash("Please insert time", "info")
-            return render_template('truck_details_for_bill.html')
+            return render_template('truck_details.html')
         else:
             truck_Id = request.form.get("licence")
             query = "SELECT truck_id from Trucks"
@@ -299,7 +300,7 @@ def get_bill():
                     return jsonify(res, t1, t2)
             else:
                 flash("truck id not found,please insert agein", "info")
-                return render_template('truck_details_for_bill.html')
+                return render_template('truck_details')
 
     return redirect(url_for("home"))
 

@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  e2e:
+    build:
+      dockerfile: e2e.Dockerfile
+      context: .
+    container_name: e2e
+    volumes:
+      - "./e2e:/e2e"
+    image: e2e
+    ports: 
+      - 5000:5000
+    #entrypoint: sleep 999999999
