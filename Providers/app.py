@@ -271,7 +271,6 @@ def load_detalis_for_bill():
 
 @app.route('/bill/getbyid', methods=['POST'])
 def get_bill():
-<<<<<<< HEAD
     if request.method == "POST":
         if not request.form["licence"]:
             flash("truck_id is required", "error")
