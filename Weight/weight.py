@@ -83,8 +83,6 @@ def post_weight():
             elif olddir == "in" and direction == "none":
                 return "Error: Cant use 'none' while 'in' is in progress (truck inside doing stuff)"
 
-
-
             now = datetime.now()
             time = now.strftime("%Y%m%d%H%M%S")
             if olddir != "in" and (direction == "in" or direction == "none"):
@@ -329,7 +327,7 @@ def get_item_id():
         except:
             return "MYSQL_IS_DOWN"
         else:
-            query = ("SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT bruto-neto), GROUP_CONCAT(sessions.id) FROM sessions WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id,from1,to))
+            query = ("SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT bruto-neto), GROUP_CONCAT(sessions.id) FROM sessions WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id, from1, to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -371,7 +369,8 @@ def get_session_UI():
                 return "Error: No such session ID exist"
 
             if inorout == "out":
-                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(test_id)
+                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(
+                    test_id)
                 cur.execute(query)
                 mysql.connection.commit()
                 res = cur.fetchall()
@@ -405,7 +404,8 @@ def get_session(id):
         inorout = inorout[0][0]
 
         if inorout == "out":
-            query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(test_id)
+            query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(
+                test_id)
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -433,8 +433,6 @@ def get_health():
         cur.close()
         return jsonify(("RUNNING",))
 
-
-app.run(debug=True, host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
