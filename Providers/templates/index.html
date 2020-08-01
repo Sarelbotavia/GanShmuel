@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html>
 
-<body>
+    {% extends "base.html" %}
+    {% block title %} Add Provider {% endblock %}
+    {% block content %}
 
-    <h2>HTML Forms</h2>
+        <form action="./reg" method="POST">improve
+            <label for="p_name">First name:</label> <br>
+            <input type="text" id="p_name" name="p_name"><br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <form action="./reg" method="POST">improve
-        <label for="p_name">First name name name :</label> <br>
-        <input type="text" id="p_name" name="p_name" value="John"><br>
-        <input type="submit" value="Submit">
-    </form>
+        <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
 
-    <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
-
-</body>
-
-</html>
+    {% endblock %}

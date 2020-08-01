@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %} Truck details {% endblock %}
+{% block content %}
+    <h1>Please enter truck ID And time formats:</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor%}
+        {% endif%}
+    {% endwith %}
+    <form action="./getbyid" method="GET">
+        <label for="licence">Truck ID:</label> <br>
+        <input type="text" name="licence" placeholder="type id here"><br>
+        <br>
+        <label for="day1">Day 1 (date and time):</label>
+        <input type="datetime-local" name="t1">
+        <br>
+        <label for="day2">day 2 (date and time):</label>
+        <input type="datetime-local" name="t2">
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
