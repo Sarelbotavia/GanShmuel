@@ -32,16 +32,6 @@ def func(arr,arg):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        details = request.form
-        firstName = details['fname']
-        lastName = details['lname']
-        cur = mysql.connection.cursor()
-        cur.execute(
-            "INSERT INTO products(product_name, scope) VALUES (%s, %s)", (firstName, lastName))
-        mysql.connection.commit()
-        cur.close()
-        return 'success'
     return render_template('index.html')
 
 @app.route('/weight', methods=['GET','POST'])
@@ -428,7 +418,7 @@ def get_health():
         return "MYSQL_IS_DOWN"
     else:
         cur.close()
-        return "RUNNING"
+        return jsonify(("RUNNING",))
 
 
 app.run(debug=True,host='0.0.0.0', port=5000)
