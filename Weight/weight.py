@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = 'db'
 app.config['MYSQL_HOST'] = 'Blue.develeap.com'
-app.config['MYSQL_HOST'] = '127.0.0.1'
+#app.config['MYSQL_HOST'] = '127.0.0.1'
 app.config['MYSQL_USER'] = 'Weight'
 app.config['MYSQL_PASSWORD'] = '123'
 app.config['MYSQL_DB'] = 'weight_db'
