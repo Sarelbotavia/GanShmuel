@@ -3,7 +3,7 @@ pipeline {
   environment {
     CAUSE = "${currentBuild.getBuildCauses()[0].shortDescription}"
   }
-  stages {
+  stages {/*
     stage('git'){
       steps{
         echo "Build caused by ${env.CAUSE}"
@@ -13,7 +13,7 @@ pipeline {
         echo CHANGE_BRANCH 
         echo CHANGE_FORK
       }
-    }
+    }*/
     stage('Preparation') {
       agent { 
         docker { 
@@ -65,7 +65,7 @@ pipeline {
           }
         }
       }
-    }
+    }/*
     stage('Compose') {
       steps {
         step ([$class: 'DockerComposeBuilder', \
@@ -74,7 +74,7 @@ pipeline {
         useCustomDockerComposeFile: true \
         ])
       }
-    }
+    }*/
 
     stage('Deploy') {
       steps {

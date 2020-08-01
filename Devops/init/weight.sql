@@ -13,6 +13,30 @@ CREATE TABLE `containers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `products`;
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_name` varchar(45) NOT NULL,
+  `rate` int(11) NOT NULL,
+  `scope` varchar(45) NOT NULL DEFAULT 'ALL',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `trucks`;
+CREATE TABLE `trucks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `truckid` varchar(45) NOT NULL,
+  `providerid` int(11) DEFAULT NULL,
+  `weight` float DEFAULT NULL,
+  `unit` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
 DROP TABLE IF EXISTS `containers_has_sessions`;
 DROP TABLE IF EXISTS `sessions`;
 
@@ -47,6 +71,22 @@ INSERT INTO containers (id,weight,unit) VALUES ('K-2369',120,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-7845',999,'lbs');
 INSERT INTO containers (id,weight,unit) VALUES ('K-1234',123,'kg');
 INSERT INTO containers (id,weight,unit) VALUES ('K-1334',0,'kg');
+
+INSERT INTO products (product_name,rate,scope) VALUES ('Blood',122,'ALL');
+INSERT INTO products (product_name,rate,scope) VALUES ('Mandarin',103,'ALL');
+INSERT INTO products (product_name,rate,scope) VALUES ('Navel',97,'ALL');
+INSERT INTO products (product_name,rate,scope) VALUES ('Blood',102,'1');
+INSERT INTO products (product_name,rate,scope) VALUES ('Clementine',100,'ALL');
+INSERT INTO products (product_name,rate,scope) VALUES ('Tangerine',80,'ALL');
+INSERT INTO products (product_name,rate,scope) VALUES ('Clementine',90,'2');
+
+INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('77777',2,666,'lbs');
+INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('66666',2,120,'kg');
+INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('99888',1,999,'lbs');
+INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('66321',3,741,'kg');
+INSERT INTO trucks (truckid,providerid,weight,unit) VALUES ('12365',4,854,'lbs');
+
+
 
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20181218181512', 999, 800, 77777, 2);
 INSERT INTO sessions (direction, date, bruto, neto, trucks_id, products_id) VALUES ('in', '20200718181512', 999, 800, 77777, 2);
