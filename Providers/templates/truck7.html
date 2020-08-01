@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html>
-
-<body>
-
+{% extends "base.html" %}
+{% block title %} Truck details {% endblock %}
+{% block content %}
     <h1>Please enter truck ID And time formats:</h1>
 
-    <form action="./" method="GET">
+    <form action="./" method="POST">
         <label for="truck_id">Truck ID:</label> <br>
         <input type="text" id="truck_id" name="turck_id" placeholder="type id here"><br>
         <br>
@@ -14,9 +12,6 @@
         <br>
         <label for="day2">day 2 (date and time):</label>
         <input type="datetime-local" id="t2" name="t2">
-        <input type="submit">
+        <input type="submit" value="Submit">
     </form>
-
-</body>
-
-</html>
+{% endblock %}
