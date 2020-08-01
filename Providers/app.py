@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-import os
-import random
-import shutil
-import pandas as pd
-import requests
-import json
+import os , random , shutil , requests , json , pandas as pd
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 from flask import Flask, jsonify , send_file , render_template , request , flash , redirect , url_for
@@ -32,9 +27,6 @@ app.config['MYSQL_DB'] = 'billdb'
 app.config['MYSQL_PORT'] = 8086
 
 mysql = MySQL(app)
-
-#db = MySQL.connect("localhost", "root", "qwerty", "information_schema")
-
 
 # =================================================================
 
@@ -206,7 +198,7 @@ def load_setTruck():
 @app.route('/truck/{id}', methods=['PUT'])
 def update_truck():
     if request.method == "PUT":
-        return 0#"return render_template('index.html')"
+        return "return render_template('index.html')"
 
 
 @app.route('/truck/insert', methods=['GET'])
@@ -215,7 +207,7 @@ def load_detalis_for_truck():
         return render_template('truck_details.html')
 
 @app.route('/truck/getbyid', methods=['POST','GET'])
-def load_get_trucks_form():
+def load_get_trucks_form(id=-1,fro='',to=''):
     if not request.form["licence"]:
         flash("truck_id is required", "error")
         return render_template('truck_details.html')
@@ -223,17 +215,23 @@ def load_get_trucks_form():
         flash("Please insert time", "info")
         return render_template('truck_details.html')
     else:
-        id = request.form.get("licence")
+        if id == -1:
+            flag=1
+            id = request.form.get("licence")
         query ="SELECT '{}' from Trucks".format(id)
         res = mysql_execute_query(query)
         for var in res:
             if id == var[0]:
                 par = {} 
-                fro = request.form.get("t1")
-                to = request.form.get("t2")
+                if fro == '':
+                    fro = request.form.get("t1")
+                if to == '':
+                    to = request.form.get("t2")
                 par = {"id":f'{id}',"from":f'{fro}',"to":f'{to}'}
                 try:
                     response = requests.post("http://blue.develeap.com:8089/item", data = par)
+                    if flag == 1:
+                        return response.text
                     return jsonify(response.text)
 
                 except HTTPError as http_err:
@@ -241,7 +239,7 @@ def load_get_trucks_form():
                 except Exception as err:
                     print(f'Other error occurred: {err}')
                 break
-
+            print(var[0])
         else:
             flash("truck id not found,please insert agein", "info")
             return render_template('truck_details.html')
@@ -253,15 +251,17 @@ def load_detalis_for_bill():
 
 @app.route('/bill/getbyid', methods=['POST'])
 def get_bill():
+    id = request.form.get("licence")
     fro = request.form.get("t1")
     to = request.form.get("t2")
-    res1 = load_get_trucks_form()
-    query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(truck_Id)
+    res1 = load_get_trucks_form(id,fro,to)
+    query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(id)
     res2 = mysql_execute_query(query)
-    pro_id = res2[0][0]
-    pro_name = res2[0][1]
-    timing_bill = res2[0][2]
-    print(fro.to,res1,pro_id,pro_name,timing_bill)
+    print(fro,to,res1,res2)
+    # pro_id = res2[0][0]
+    # pro_name = res2[0][1]
+    # timing_bill = res2[0][2]
+    # print(pro_id,pro_name,timing_bill)
     return redirect(url_for("home"))
 
 
@@ -289,9 +289,5 @@ def get_health():
     res = mysql_execute_query(query)
     return jsonify(res)
 
-
-# @app.route('/api/healthy', methods=['GET'])
-# def get_tasks():
-#     return jsonify({'tasks': tasks})
 
 app.run(debug=True, host='0.0.0.0', port=5000)
