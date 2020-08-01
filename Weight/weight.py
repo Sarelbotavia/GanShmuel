@@ -36,16 +36,6 @@ def func(arr, arg):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        details = request.form
-        firstName = details['fname']
-        lastName = details['lname']
-        cur = mysql.connection.cursor()
-        cur.execute(
-            "INSERT INTO products(product_name, scope) VALUES (%s, %s)", (firstName, lastName))
-        mysql.connection.commit()
-        cur.close()
-        return 'success'
     return render_template('index.html')
 
 
@@ -337,7 +327,7 @@ def get_item_id():
         except:
             return "MYSQL_IS_DOWN"
         else:
-            query = (" SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT trucks.weight), GROUP_CONCAT(sessions.id) FROM sessions JOIN trucks ON trucks.truckid=sessions.trucks_id WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id, from1, to))
+            query = ("SELECT DISTINCT sessions.trucks_id, GROUP_CONCAT(DISTINCT bruto-neto), GROUP_CONCAT(sessions.id) FROM sessions WHERE (sessions.trucks_id='{}') and (date BETWEEN '{}' AND '{}');".format(test_id, from1, to))
             cur.execute(query)
             mysql.connection.commit()
             res = cur.fetchall()
@@ -373,10 +363,13 @@ def get_session_UI():
                 "SELECT direction FROM sessions WHERE (id='{}');".format(test_id))
             mysql.connection.commit()
             inorout = cur.fetchall()
-            inorout = inorout[0][0]
+            if inorout != ():
+                inorout = inorout[0][0]
+            else:
+                return "Error: No such session ID exist"
 
             if inorout == "out":
-                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, trucks.weight FROM sessions JOIN trucks ON sessions.trucks_id=trucks.truckid WHERE (sessions.id='{}');".format(
+                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(
                     test_id)
                 cur.execute(query)
                 mysql.connection.commit()
@@ -411,7 +404,7 @@ def get_session(id):
         inorout = inorout[0][0]
 
         if inorout == "out":
-            query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, trucks.weight FROM sessions JOIN trucks ON sessions.trucks_id=trucks.truckid WHERE (sessions.id='{}');".format(
+            query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(
                 test_id)
             cur.execute(query)
             mysql.connection.commit()
@@ -438,10 +431,8 @@ def get_health():
         return "MYSQL_IS_DOWN"
     else:
         cur.close()
-        return "RUNNING"
+        return jsonify(("RUNNING",))
 
-
-app.run(debug=True, host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
