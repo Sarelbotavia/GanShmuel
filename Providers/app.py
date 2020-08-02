@@ -300,12 +300,12 @@ def get_bill():
                     break
        
     return jsonify(jsonbill,list_res,{"total":f'{total}'})
-"""
+
 @app.route('/health', methods=['GET'])
 def get_health():
     query = "SELECT truck_id from Trucks;"
     res = mysql_execute_query(query)
     return jsonify(res)
 
-"""
+
 app.run(debug=True, host='0.0.0.0', port=5000)

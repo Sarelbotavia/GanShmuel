@@ -369,15 +369,15 @@ def get_session_UI():
                 return "Error: No such session ID exist"
 
             if inorout == "out":
-                query = "SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE (sessions.id='{}');".format(
+                query = "SELECT sessions.id, trucks_id, bruto, neto, bruto-neto, products_id FROM sessions WHERE (sessions.id='{}');".format(
                     test_id)
                 cur.execute(query)
                 mysql.connection.commit()
                 res = cur.fetchall()
                 cur.close()
                 m = np.array(res)
-                return jsonify(func(m, 'id,trucks id,bruto,neto,truck weight'))
-            query = "SELECT id,trucks_id,bruto FROM sessions WHERE (id='{}');".format(
+                return jsonify(func(m, 'id,trucks id,bruto,neto,truck weight,products id'))
+            query = "SELECT id,trucks_id,bruto,products_id FROM sessions WHERE (id='{}');".format(
                 test_id)
             cur.execute(query)
             mysql.connection.commit()
@@ -385,7 +385,7 @@ def get_session_UI():
             cur.close()
 
             m = np.array(res)
-            return jsonify(func(m, 'id,trucks id,bruto'))
+            return jsonify(func(m, 'id,trucks id,bruto,products id'))
     return render_template('sessions.html')
 
 
