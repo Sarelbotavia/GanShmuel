@@ -1,7 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body{
+        background-image: url(./bg.jpg);
+        background-size: cover;
+        background-position: center top;
+        height: 100vh;
+        display: grid;
+        
+      }
+      #wrapper{
+        display: grid;
+        grid-template-rows: auto 1fr;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-items: center;
+      }
+      H2{
+        padding: 0px;
+        margin-top: 100px;
+        text-align: center;
+        color: #fff;
+        font-size: 4rem;
+      }
+      form{align-self: flex-start;
+        display:grid;
+        justify-items: center;
+        margin-top: 50px;
+        width: 100%;
+      }
+      input{
+        padding: 10px 30px;
+        
+        margin: 10px;
 
+      }
+    </style>
+  </head>
+
+  <body>
     {% extends "base.html" %}
     {% block title %} Add Provider {% endblock %}
     {% block content %}
+        <h2>update provider id</h2>
 
         <form action="./reg" method="POST">improve
             <label for="p_name">First name:</label> <br>
@@ -9,6 +52,7 @@
             <input type="submit" value="Submit">
         </form>
 
-        <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
-
     {% endblock %}
+    </body>
+
+</html>

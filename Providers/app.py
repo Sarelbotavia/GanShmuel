@@ -136,8 +136,8 @@ def upload_rates():
         shutil.copy(excel_file_temp_path, LAST_UPLOADED_EXCEL)
         return jsonify(res)
 
-    except:
-        return 'Somthing went wrong, try again :)'
+    # except:
+    #     return 'Somthing went wrong, try again :)'
 
     finally:
         for x in files_to_delete_when_function_finishes:
