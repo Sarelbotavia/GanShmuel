@@ -51,6 +51,8 @@ def mysql_execute_query(query):
         res = cur.fetchall()
         cur.close()
         return res
+def timeformat(data):
+    return (data[0:4]+data[5:7]+data[8:10]+data[11:13]+data[14:16]+"00")
 
 # ====================================================================
 
@@ -215,6 +217,7 @@ def load_get_trucks_form(id=-1,fro='',to=''):
         flash("Please insert time", "info")
         return render_template('truck_details.html')
     else:
+        flag=0
         if id == -1:
             flag=1
             id = request.form.get("licence")
@@ -227,12 +230,14 @@ def load_get_trucks_form(id=-1,fro='',to=''):
                     fro = request.form.get("t1")
                 if to == '':
                     to = request.form.get("t2")
+                fro=timeformat(fro)
+                to=timeformat(to)
                 par = {"id":f'{id}',"from":f'{fro}',"to":f'{to}'}
                 try:
                     response = requests.post("http://blue.develeap.com:8089/item", data = par)
                     if flag == 1:
-                        return response.text
-                    return jsonify(response.text)
+                        return jsonify(response.text)
+                    return response.text
 
                 except HTTPError as http_err:
                     print(f'HTTP error occurred: {http_err}')
@@ -254,34 +259,47 @@ def get_bill():
     id = request.form.get("licence")
     fro = request.form.get("t1")
     to = request.form.get("t2")
-    res1 = load_get_trucks_form(id,fro,to)
+    res1 = load_get_trucks_form(id,timeformat(fro),timeformat(to))
     query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(id)
     res2 = mysql_execute_query(query)
-    print(fro,to,res1,res2)
-    # pro_id = res2[0][0]
-    # pro_name = res2[0][1]
-    # timing_bill = res2[0][2]
-    # print(pro_id,pro_name,timing_bill)
-    return redirect(url_for("home"))
-
-
-"""
-  "provider id": <str>,
-  "name": <str>,
-  "from": <str>,
-  "to": <str>,
-  "licence": <int>,
-  "sessionCount": <int>,
-  "products": [
-    { "product":<str>, // 
-      "count": <str>, // number of sessions
-      "amount": <int>, // total kg
-      "rate": <int>, // agorot
-      "pay": <int> // agorot
-    },...
-  ],
-  "total": <int> // agorot
-}
+    jsonbill = [{"provider id":f'{res2[0][0]}',"name": f'{res2[0][1]}',"from": f'{fro}',"to": f'{to}',"licence": f'{id}',}]
+    num=''
+    total=0
+    list_res=[]
+    for var in res1.split(':')[-1]:
+        if var.isdigit():
+            num+=var
+        else:
+            response = requests.post("http://blue.develeap.com:8089/session", data={"id":f'{num}'})
+            sess = (response.text)
+            sess=sess.split(',')
+            if sess[0] == "Error: No such session ID exist":
+                continue
+            num_session=''
+            for session in sess[-1]:
+                if var.isdigit():
+                    num_session+=session
+                else:
+                    query = "SELECT distinct rate,product_name from Products where product_id=3"
+                    # .format(id)
+                    res3 = mysql_execute_query(query)
+                    num_session=''
+                    sss=res3[0][1]
+                    print(res3)
+                    print(res3[0][1])
+                    pok=sss
+                    print(pok)
+                    print("-------------------------------------------------")
+                    hhh=sess[2].split(":")[-1]
+                    pok2=hhh[0:-3]
+                    print(pok,pok2)
+                    pay=int(pok)*int(pok2)
+                    prod=[{"sessionCount":f'{sess[0].split(":")[-1]}'},{ "product":f'{res3[0][0]}',"amount": f'{sess[2].split(":")[-1]}', "rate": f'{res3[0][1]}', "pay": f'{pay}'}]
+                    list_res+=prod
+                    total+=pay
+                    break
+       
+    return jsonify(jsonbill,list_res,{"total":f'{total}'})
 """
 @app.route('/health', methods=['GET'])
 def get_health():
@@ -289,5 +307,5 @@ def get_health():
     res = mysql_execute_query(query)
     return jsonify(res)
 
-
+"""
 app.run(debug=True, host='0.0.0.0', port=5000)
