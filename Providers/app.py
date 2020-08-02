@@ -109,7 +109,6 @@ def upload_rates():
         excel_file_temp_path = get_safe_temp_filename(f.filename)
         f.save(excel_file_temp_path)
         files_to_delete_when_function_finishes.append(excel_file_temp_path)
-
         # convert to csv
         csv_file_temp_path = get_safe_temp_filename("newfile.csv")
         excel_to_csv = pd.read_excel(excel_file_temp_path)
@@ -117,27 +116,24 @@ def upload_rates():
         files_to_delete_when_function_finishes.append(csv_file_temp_path)
 
         # insetr into database
-        query = "DELETE FROM Rates "
+        query = "DELETE FROM Products "
         mysql_execute_query(query)
-
-        query = """LOAD DATA LOCAL INFILE '{}' INTO TABLE Rates FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS """
+        query = """LOAD DATA LOCAL INFILE '{}' INTO TABLE Products FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS """
         query = query.format(csv_file_temp_path)
         mysql_execute_query(query)
-
-        query = "SELECT * FROM Rates "
+        query = "SELECT * FROM Products "
         cur = mysql.connection.cursor()
         cur.execute(query)
         res = cur.fetchall()
         cur.close()
-
         # save last file
         if os.path.isfile(LAST_UPLOADED_EXCEL):
             os.remove(LAST_UPLOADED_EXCEL)
         shutil.copy(excel_file_temp_path, LAST_UPLOADED_EXCEL)
         return jsonify(res)
 
-    except:
-        return 'Somthing went wrong, try again :)'
+    # except:
+    #     return 'Somthing went wrong, try again :)'
 
     finally:
         for x in files_to_delete_when_function_finishes:
@@ -258,6 +254,7 @@ def get_bill():
     query = "SELECT Trucks.provider_id,Providers.provider_name,Providers.payment_timing from Trucks join Providers on Trucks.provider_id=Providers.provider_id where Trucks.truck_id={}".format(id)
     res2 = mysql_execute_query(query)
     print(fro,to,res1,res2)
+
     # pro_id = res2[0][0]
     # pro_name = res2[0][1]
     # timing_bill = res2[0][2]
