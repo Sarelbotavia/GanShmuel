@@ -117,14 +117,14 @@ def upload_rates():
         files_to_delete_when_function_finishes.append(csv_file_temp_path)
 
         # insetr into database
-        query = "DELETE FROM Rates "
+        query = "DELETE FROM Products "
         mysql_execute_query(query)
 
-        query = """LOAD DATA LOCAL INFILE '{}' INTO TABLE Rates FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS """
+        query = """LOAD DATA LOCAL INFILE '{}' INTO TABLE Products FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS """
         query = query.format(csv_file_temp_path)
         mysql_execute_query(query)
 
-        query = "SELECT * FROM Rates "
+        query = "SELECT * FROM Products "
         cur = mysql.connection.cursor()
         cur.execute(query)
         res = cur.fetchall()
